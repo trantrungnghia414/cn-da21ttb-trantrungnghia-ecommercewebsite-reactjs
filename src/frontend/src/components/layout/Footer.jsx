@@ -23,9 +23,9 @@ function Footer() {
           <div>
             <h3 className="text-xl font-bold mb-4">Liên hệ</h3>
             <ul className="text-gray-400 space-y-2">
-              <li>Địa chỉ: 123 Đường ABC, Quận XYZ</li>
-              <li>Email: contact@example.com</li>
-              <li>Điện thoại: (123) 456-7890</li>
+              <li>Địa chỉ: 126 Nguyễn Thiện Thành, Phường 5, Trà Vinh, Việt Nam</li>
+              <li>Email: trungnghia@gmail.com</li>
+              <li>Điện thoại: (84) 929039414</li>
             </ul>
           </div>
           <div>
@@ -38,7 +38,7 @@ function Footer() {
           </div>
         </div>
         <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; 2024 Your Company. All rights reserved.</p>
+          <p>&copy; 2024 N Ecommerce. All rights reserved.</p>
         </div>
       </div>
     </footer>

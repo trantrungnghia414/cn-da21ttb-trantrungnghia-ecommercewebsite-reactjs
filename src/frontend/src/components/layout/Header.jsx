@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import logo from '../../assets/images/logo.png';
 
 function Header() {
   return (
@@ -7,7 +8,7 @@ function Header() {
       <nav className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
           <Link to="/" className="text-2xl font-bold text-red-500">
-            Logo
+            <img src={logo} alt="logo" className="h-8" />
           </Link>
 
           <div className="hidden md:flex space-x-6">
