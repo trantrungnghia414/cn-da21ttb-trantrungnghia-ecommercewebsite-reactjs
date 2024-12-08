@@ -1,24 +1,36 @@
-import Home from '../pages/Home';
-import Products from '../pages/Products';
-import ProductDetail from '../pages/ProductDetail';
-import Cart from '../pages/Cart'; 
+
+import Login from '~/pages/auth/Login';
+import Register from '~/pages/auth/Register';
+import Cart from '~/pages/Cart';
+import Home from '~/pages/Home';
+import ProductDetail from '~/pages/ProductDetail';
+import Products from '~/pages/Products';
+
 const routes = [
   {
     path: '/',
-    element: <Home />
+    element: <Home />,
   },
   {
     path: '/products',
-    element: <Products />
+    element: <Products />,
   },
   {
     path: '/products/:id',
-    element: <ProductDetail />
+    element: <ProductDetail />,
   },
   {
     path: '/cart',
-    element: <Cart />
-  }
+    element: <Cart />,
+  },
+  {
+    path: '/login',
+    element: <Login />,
+  },
+  {
+    path: '/register',
+    element: <Register />,
+  },
 ];
 
 export default routes;

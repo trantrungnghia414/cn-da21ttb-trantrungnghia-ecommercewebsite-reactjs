@@ -9,14 +9,35 @@ function Cart() {
       name: 'iPhone 13 Pro',
       price: 28990000,
       quantity: 1,
-      image: 'https://placeholder.com/300'
+      image: 'https://itnstore.com/thumbs/385x385x2/upload/product/iphone-16-pro-max-titan-trang-8658.png'
     },
     {
       id: 2, 
       name: 'MacBook Air M1',
       price: 24990000,
-      quantity: 1,
-      image: 'https://placeholder.com/300'
+      quantity: 3,
+      image: 'https://itnstore.com/thumbs/385x385x2/upload/product/iphone-16-pro-max-titan-trang-8658.png'
+    },
+    {
+      id: 3,
+      name: 'Apple Watch Series 6',
+      price: 14990000,
+      quantity: 2,
+      image: 'https://itnstore.com/thumbs/385x385x2/upload/product/iphone-16-pro-max-titan-trang-8658.png'
+    },
+    {
+      id: 4,
+      name: 'Apple Watch Series 6',
+      price: 14990000,
+      quantity: 4,
+      image: 'https://itnstore.com/thumbs/385x385x2/upload/product/iphone-16-pro-max-titan-trang-8658.png'
+    },
+    {
+      id: 5,
+      name: 'Apple Watch Series 6',
+      price: 14990000,
+      quantity: 3,
+      image: 'https://itnstore.com/thumbs/385x385x2/upload/product/iphone-16-pro-max-titan-trang-8658.png'
     }
   ];
 
@@ -45,7 +66,7 @@ function Cart() {
                 key={item.id}
                 className="flex items-center gap-4 bg-white p-4 rounded-lg shadow-md mb-4"
               >
-                <div className="w-24 h-24 bg-gray-200 rounded-md"></div>
+                <div className="w-24 h-24 bg-gray-200 rounded-md"><img src={item.image} alt={item.name} /></div>
                 <div className="flex-grow">
                   <h3 className="text-lg font-medium text-gray-800">{item.name}</h3>
                   <p className="text-red-500 font-semibold">

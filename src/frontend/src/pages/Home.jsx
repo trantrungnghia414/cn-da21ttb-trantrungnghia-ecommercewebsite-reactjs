@@ -39,16 +39,46 @@ function Home() {
       <section>
         <h2 className="text-2xl font-semibold text-gray-800 mb-6">Sản phẩm nổi bật</h2>
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[1, 2, 3, 4].map((item) => (
-            <div key={item} className="bg-white rounded-lg shadow-md overflow-hidden">
-              <Link to={`/products/${item}`} className="block">
+          {[
+            {
+              id: 1,
+              name: 'iPhone 13 Pro Max',
+              price: 29990000,
+              image: 'https://itnstore.com/thumbs/385x385x2/upload/product/iphone-16-pro-max-titan-trang-8658.png'
+            },
+            {
+              id: 2,
+              name: 'MacBook Air M1',
+              price: 24990000,
+              image: 'https://itnstore.com/thumbs/385x385x2/upload/product/iphone-16-pro-max-titan-trang-8658.png'
+            },
+            {
+              id: 3, 
+              name: 'Apple Watch Series 6',
+              price: 14990000,
+              image: 'https://itnstore.com/thumbs/385x385x2/upload/product/iphone-16-pro-max-titan-trang-8658.png'
+            },
+            {
+              id: 4,
+              name: 'AirPods Pro',
+              price: 5990000,
+              image: 'https://itnstore.com/thumbs/385x385x2/upload/product/iphone-16-pro-max-titan-trang-8658.png'
+            }
+          ].map((product) => (
+            <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+              <Link to={`/products/${product.id}`} className="block">
                 <div className="aspect-w-1 aspect-h-1 bg-gray-200">
-                  {/* Product image placeholder */}
-                  <div className="w-full h-48 bg-gray-200"></div>
+                  <img 
+                    src={product.image}
+                    alt={product.name}
+                    className="w-full h-48 object-cover"
+                  />
                 </div>
                 <div className="p-4">
-                  <h3 className="text-lg font-medium text-gray-800 mb-2">Sản phẩm {item}</h3>
-                  <p className="text-red-500 font-semibold">1.999.000 ₫</p>
+                  <h3 className="text-lg font-medium text-gray-800 mb-2">{product.name}</h3>
+                  <p className="text-red-500 font-semibold">
+                    {product.price.toLocaleString('vi-VN')} ₫
+                  </p>
                   <button 
                     className="w-full mt-4 bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
                     onClick={(e) => {

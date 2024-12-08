@@ -68,3 +68,76 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+
+<!-- ====================== NOTE ====================== -->
+
+### Customize CRA Webpack
+
+- [Customize CRA](https://github.com/arackaf/customize-cra)
+
+B1: Install `customize-cra` and `react-app-rewired`
+
+```bash
+npm i customize-cra react-app-rewired -D
+```
+
+B2: Create `config-overrides.js` file in the root of the project and add the following code:
+
+```js
+const { override, useBabelRc } = require('customize-cra');
+
+// eslint-disable-next-line react-hooks/rules-of-hooks
+module.exports = override(useBabelRc());
+```
+
+B3: Add `react-app-rewired` to `package.json`
+
+```json
+"scripts": {
+  "start": "react-app-rewired start",
+  "build": "react-app-rewired build",
+  "test": "react-app-rewired test"
+}
+```
+
+### Babel
+
+- [Babel](https://babeljs.io/)
+
+- [Babel Plugin](https://github.com/tleunen/babel-plugin-module-resolver)
+
+B1: Install `babel-plugin-module-resolver`
+
+```bash
+npm i babel-plugin-module-resolver -D
+```
+
+B2: Add `babel-plugin-module-resolver` to `.babelrc`
+
+```json
+{
+  "plugins": [
+    [
+      "module-resolver",
+      {
+        "alias": {
+          "~": "./src"
+        }
+      }
+    ]
+  ]
+}
+```
+
+B3: Add alias to `jsconfig.json`
+
+```json
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "~/*": ["src/*"]
+    }
+  }
+}
+```

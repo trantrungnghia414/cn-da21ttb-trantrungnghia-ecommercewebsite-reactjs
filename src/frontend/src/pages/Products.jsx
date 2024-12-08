@@ -4,6 +4,20 @@ import { Link } from 'react-router-dom';
 function Products() {
   const [sortBy, setSortBy] = useState('featured');
   const [viewMode, setViewMode] = useState('grid');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const productsPerPage = 8;
+  const products = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+  const totalPages = Math.ceil(products.length / productsPerPage);
+
+  // Get current products
+  const indexOfLastProduct = currentPage * productsPerPage;
+  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
+  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
+
+  const handlePageChange = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -47,7 +61,7 @@ function Products() {
 
       {/* Product Grid */}
       <div className={`grid ${viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-4' : 'grid-cols-1'} gap-6`}>
-        {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
+        {currentProducts.map((item) => (
           <div key={item} className={`bg-white rounded-lg shadow-md overflow-hidden ${viewMode === 'list' ? 'flex' : ''}`}>
             <Link to={`/products/${item}`} className="block">
               <div className={`${viewMode === 'grid' ? 'aspect-w-1 aspect-h-1' : 'w-48'} bg-gray-200`}>
@@ -75,11 +89,31 @@ function Products() {
       {/* Pagination */}
       <div className="mt-8 flex justify-center">
         <div className="flex gap-2">
-          <button className="px-4 py-2 border rounded-md hover:bg-gray-100">Trước</button>
-          <button className="px-4 py-2 border rounded-md bg-red-500 text-white">1</button>
-          <button className="px-4 py-2 border rounded-md hover:bg-gray-100">2</button>
-          <button className="px-4 py-2 border rounded-md hover:bg-gray-100">3</button>
-          <button className="px-4 py-2 border rounded-md hover:bg-gray-100">Sau</button>
+          <button 
+            className="px-4 py-2 border rounded-md hover:bg-gray-100"
+            onClick={() => handlePageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+          >
+            Trước
+          </button>
+          {[...Array(totalPages)].map((_, index) => (
+            <button
+              key={index + 1}
+              className={`px-4 py-2 border rounded-md ${
+                currentPage === index + 1 ? 'bg-red-500 text-white' : 'hover:bg-gray-100'
+              }`}
+              onClick={() => handlePageChange(index + 1)}
+            >
+              {index + 1}
+            </button>
+          ))}
+          <button 
+            className="px-4 py-2 border rounded-md hover:bg-gray-100"
+            onClick={() => handlePageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+          >
+            Sau
+          </button>
         </div>
       </div>
     </div>
