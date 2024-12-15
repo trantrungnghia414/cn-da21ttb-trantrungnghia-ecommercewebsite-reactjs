@@ -1,4 +1,6 @@
-
+import React from 'react';
+import DefaultLayout from '~/layout/DefaultLayout';
+import SingleLayout from '~/layout/SingleLayout';
 import Login from '~/pages/auth/Login';
 import Register from '~/pages/auth/Register';
 import Cart from '~/pages/Cart';
@@ -9,27 +11,27 @@ import Products from '~/pages/Products';
 const routes = [
   {
     path: '/',
-    element: <Home />,
+    element: <DefaultLayout><Home /></DefaultLayout>,
   },
   {
     path: '/products',
-    element: <Products />,
+    element: <DefaultLayout><Products /></DefaultLayout>,
   },
   {
     path: '/products/:id',
-    element: <ProductDetail />,
+    element: <DefaultLayout><ProductDetail /></DefaultLayout>,
   },
   {
     path: '/cart',
-    element: <Cart />,
+    element: <DefaultLayout><Cart /></DefaultLayout>,
   },
   {
-    path: '/login',
-    element: <Login />,
+    path: '/login', 
+    element: <SingleLayout><Login /></SingleLayout>,
   },
   {
     path: '/register',
-    element: <Register />,
+    element: <SingleLayout><Register /></SingleLayout>,
   },
 ];
 

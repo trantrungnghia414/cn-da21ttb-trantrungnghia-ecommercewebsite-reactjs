@@ -7,8 +7,8 @@ function Header() {
     <header className="bg-white shadow-md">
       <nav className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
-          <Link to="/" className="text-2xl font-bold text-red-500">
-            <img src={logo} alt="logo" className="h-8" />
+          <Link to="/" className="flex items-center text-2xl font-bold text-red-500">
+            <img src={logo} alt="logo" className="h-8 mr-2" />NGHIASTORE
           </Link>
 
           <div className="hidden md:flex space-x-6">

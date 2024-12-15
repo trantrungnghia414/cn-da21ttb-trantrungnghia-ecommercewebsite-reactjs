@@ -36,7 +36,7 @@ function ProductDetail() {
         {/* Product Image */}
         <div className="bg-white rounded-lg shadow-md overflow-hidden">
           <div className="aspect-w-1 aspect-h-1 bg-gray-200">
-            <div className="w-full h-96 bg-gray-200"></div>
+            <div className="w-full h-96 bg-gray-200">Sản phẩm có id: {id}</div>
           </div>
         </div>
 
