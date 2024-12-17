@@ -11,6 +11,7 @@
 # production
 /build
 temp.txt
+temp1.txt
 
 # misc
 .DS_Store
