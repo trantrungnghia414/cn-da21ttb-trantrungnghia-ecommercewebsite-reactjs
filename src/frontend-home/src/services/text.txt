@@ -1,0 +1,4 @@
+Thư mục này chứa các dịch vụ (services) mà ứng dụng sử dụng để tương tác với API hoặc thực hiện các tác vụ khác. Các file trong thư mục này có thể bao gồm:
+apiService.js: Chứa các hàm để gọi API, xử lý các yêu cầu và phản hồi.
+authService.js: Chứa các hàm liên quan đến xác thực người dùng như đăng nhập, đăng ký, và đăng xuất.
+productService.js: Chứa các hàm để lấy thông tin sản phẩm từ API.

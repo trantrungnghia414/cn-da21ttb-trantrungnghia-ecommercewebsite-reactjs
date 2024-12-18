@@ -1,0 +1,4 @@
+Thư mục này thường chứa các cấu hình và thiết lập cho ứng dụng. Các file trong thư mục này có thể bao gồm:
+Cấu hình API: Địa chỉ URL của API mà ứng dụng sẽ gọi.
+Cấu hình môi trường: Các biến môi trường khác nhau cho các môi trường phát triển, kiểm thử và sản xuất.
+Cấu hình thư viện: Cấu hình cho các thư viện bên ngoài như Axios, Redux, hoặc các thư viện khác mà ứng dụng sử dụng.

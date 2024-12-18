@@ -1,0 +1,158 @@
+Tên đề tài: Website Thương mại điện tử bán đồ công nghệ
+1. Chức năng tổng quát của website
+
+A. Phần người dùng (Client)
+•  Đăng ký, đăng nhập, quên mật khẩu
+•  Xem danh sách sản phẩm và tìm kiếm
+•  Lọc sản phẩm theo danh mục, giá, thương hiệu
+•  Xem chi tiết sản phẩm
+•  Giỏ hàng và thanh toán
+•  Theo dõi đơn hàng
+•  Đánh giá và bình luận sản phẩm
+•  Quản lý thông tin cá nhân
+
+B. Phần quản trị (Admin)
+•  Quản lý sản phẩm (CRUD)
+•  Quản lý danh mục
+•  Quản lý đơn hàng
+•  Quản lý người dùng
+•  Thống kê doanh thu
+•  Quản lý khuyến mãi
+
+2. Các API cần thiết:
+Authentication:
+•  POST /api/auth/register
+•  POST /api/auth/login
+•  POST /api/auth/logout
+•  GET /api/auth/profile
+
+Products:
+•  GET /api/products
+•  GET /api/products/:id
+•  POST /api/products (admin)
+•  PUT /api/products/:id (admin)
+•  DELETE /api/products/:id (admin)
+•  GET /api/products/category/:categoryId
+
+Categories:
+•  GET /api/categories
+•  POST /api/categories (admin)
+•  PUT /api/categories/:id (admin)
+•  DELETE /api/categories/:id (admin)
+
+Cart:
+•  GET /api/cart
+•  POST /api/cart/add
+•  PUT /api/cart/update
+•  DELETE /api/cart/remove
+
+Orders:
+•  GET /api/orders
+•  POST /api/orders
+•  GET /api/orders/:id
+•  PUT /api/orders/:id/status (admin)
+
+Reviews:
+•  GET /api/reviews/product/:productId
+•  POST /api/reviews
+•  DELETE /api/reviews/:id (admin)
+
+4. Công nghệ sử dụng:
+•  Frontend: React + Tailwind CSS
+•  Backend: Node.js + Express.js
+•  Database: MySQL
+•  Authentication: JWT
+
+5. Các bước tiếp theo:
+•  Thiết kế giao diện (UI/UX)
+•  Xây dựng REST API Documentation (có thể sử dụng Swagger)
+•  Phát triển Backend API (không dùng redux)
+•  Phát triển Frontend
+•  Testing
+•  Deployment
+
+
+1. Bảng Users
+Mô tả: Bảng này quản lý thông tin người dùng.
+Các loại người dùng:
+Admin: Có quyền quản trị hệ thống, có thể thêm, sửa, xóa sản phẩm, danh mục, thương hiệu, và quản lý đơn hàng.
+User: Có thể mua hàng, đặt hàng, và xem sản phẩm.
+2. Bảng Categories
+Mô tả: Bảng này chứa thông tin về các danh mục sản phẩm.
+Mối quan hệ:
+Một danh mục có thể chứa nhiều thương hiệu.
+Một thương hiệu có thể thuộc về nhiều danh mục (nhiều-nhiều).
+3. Bảng Brands
+Mô tả: Bảng này quản lý thông tin về các thương hiệu sản phẩm.
+Mối quan hệ:
+Một thương hiệu có thể có nhiều sản phẩm.
+Một sản phẩm có thể thuộc về một thương hiệu.
+4. Bảng Products
+Mô tả: Bảng này quản lý thông tin về các sản phẩm.
+Mối quan hệ:
+Một sản phẩm thuộc về một danh mục và một thương hiệu.
+Một sản phẩm có thể có nhiều màu sắc và biến thể.
+5. Bảng ProductColors
+Mô tả: Bảng này quản lý thông tin về màu sắc của sản phẩm.
+Mối quan hệ:
+Một sản phẩm có thể có nhiều màu sắc.
+6. Bảng ProductVariants
+Mô tả: Bảng này quản lý các biến thể của sản phẩm như dung lượng, giá cả, và số lượng.
+Mối quan hệ:
+Một sản phẩm có thể có nhiều biến thể.
+7. Bảng ProductImages
+Mô tả: Bảng này quản lý thông tin về hình ảnh của sản phẩm theo màu sắc.
+Mối quan hệ:
+Mỗi màu sắc của sản phẩm (được quản lý trong bảng ProductColors) có thể có nhiều hình ảnh khác nhau.
+Mỗi hình ảnh thuộc về một màu sắc cụ thể của một sản phẩm.
+Tóm tắt về mối quan hệ
+Một sản phẩm có thể có nhiều màu sắc (bảng ProductColors).
+Mỗi màu sắc có thể có nhiều hình ảnh (bảng ProductImages).
+Điều này cho phép bạn lưu trữ nhiều hình ảnh cho mỗi màu sắc của sản phẩm, giúp người dùng có cái nhìn rõ hơn về sản phẩm trước khi mua.
+8. Bảng Carts
+Mô tả: Bảng này quản lý giỏ hàng của người dùng.
+Mối quan hệ:
+Một người dùng có thể có nhiều giỏ hàng (nếu bạn cho phép lưu trữ nhiều giỏ hàng).
+9. Bảng Orders
+Mô tả: Bảng này quản lý thông tin về các đơn hàng.
+Mối quan hệ:
+Một người dùng có thể đặt nhiều đơn hàng.
+Mỗi đơn hàng có thể chứa nhiều sản phẩm thông qua bảng OrderDetails.
+10. Bảng OrderDetails
+Mô tả: Bảng này lưu trữ chi tiết về các sản phẩm trong mỗi đơn hàng.
+Mối quan hệ:
+Một đơn hàng có thể chứa nhiều sản phẩm.
+11. Bảng Payments
+Mô tả: Bảng này lưu thông tin về các giao dịch thanh toán.
+Mối quan hệ:
+Mỗi đơn hàng có thể có một hoặc nhiều giao dịch thanh toán.
+12. Bảng Promotions
+Mô tả: Bảng này quản lý thông tin về các chương trình khuyến mãi.
+Mối quan hệ:
+Một sản phẩm có thể có nhiều chương trình khuyến mãi.
+13. Bảng Reviews
+Mô tả: Bảng này quản lý đánh giá của người dùng về sản phẩm.
+Mối quan hệ:
+Một sản phẩm có thể có nhiều đánh giá từ nhiều người dùng.
+14. Bảng TransactionHistory
+Mô tả: Bảng này lưu trữ lịch sử giao dịch của người dùng.
+Mối quan hệ:
+Một người dùng có thể có nhiều giao dịch.
+15. Bảng Suppliers
+Mô tả: Bảng này quản lý thông tin về các nhà cung cấp sản phẩm.
+
+Người dùng (Users)
+Danh mục (Categories)
+Thương hiệu (Brands)
+Sản phẩm (Products)
+Màu sắc sản phẩm (ProductColors)
+Biến thể sản phẩm (ProductVariants)
+Hình ảnh sản phẩm (ProductImages)
+Giỏ hàng (Carts)
+Đơn hàng (Orders)
+Chi tiết đơn hàng (OrderDetails)
+Thanh toán (Payments)
+Khuyến mãi (Promotions)
+Đánh giá (Reviews)
+Lịch sử giao dịch (TransactionHistory)
+Nhà cung cấp (Suppliers)

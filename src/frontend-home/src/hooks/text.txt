@@ -1,0 +1,4 @@
+Thư mục này chứa các custom hooks mà bạn có thể tạo ra để tái sử dụng logic trong các component. Các file trong thư mục này có thể bao gồm:
+useFetch: Một hook tùy chỉnh để thực hiện các yêu cầu API và quản lý trạng thái tải dữ liệu.
+useLocalStorage: Một hook để quản lý dữ liệu trong local storage của trình duyệt.
+useForm: Một hook để quản lý trạng thái và xử lý form.

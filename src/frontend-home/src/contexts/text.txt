@@ -1,0 +1,4 @@
+Thư mục này chứa các context của React, cho phép chia sẻ dữ liệu giữa các component mà không cần phải truyền props qua từng cấp. Các file trong thư mục này có thể bao gồm:
+UserContext: Chứa thông tin người dùng và trạng thái xác thực.
+ThemeContext: Quản lý chế độ sáng/tối của ứng dụng.
+CartContext: Quản lý trạng thái giỏ hàng trong ứng dụng thương mại điện tử.
