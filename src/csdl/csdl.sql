@@ -113,7 +113,7 @@ CREATE TABLE payments (
     transaction_id VARCHAR(255),
     payment_date TIMESTAMP,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+    FOREIGN KEY (order_id) REFERENCES Orders(OrderID) ON DELETE CASCADE
 );
 
 -- Bảng Promotions (Quản lý khuyến mãi)
