@@ -16,6 +16,7 @@ function Sidebar() {
     { name: 'Dashboard', href: '/admin', icon: HomeIcon },
     { name: 'Sản phẩm', href: '/admin/products', icon: CubeIcon },
     { name: 'Danh mục', href: '/admin/categories', icon: TagIcon },
+    { name: 'Thương hiệu', href: '/admin/brands', icon: TagIcon },
     { name: 'Đơn hàng', href: '/admin/orders', icon: ShoppingCartIcon },
     { name: 'Khách hàng', href: '/admin/users', icon: UsersIcon },
     { name: 'Khuyến mãi', href: '/admin/promotions', icon: ChartBarIcon },

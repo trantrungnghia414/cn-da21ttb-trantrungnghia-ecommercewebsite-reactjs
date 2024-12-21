@@ -13,6 +13,8 @@ import OrderDetail from '../pages/Orders/OrderDetail';
 import UserList from '../pages/Users/UserList';
 import PromotionList from '../pages/Promotions/PromotionList';
 import PromotionForm from '../pages/Promotions/PromotionForm';
+import BrandList from '~/pages/Brands/BrandList';
+import BrandForm from '~/pages/Brands/BrandForm';
 
 // Error Page
 const ErrorPage = () => {
@@ -76,6 +78,24 @@ const router = createBrowserRouter([
           {
             path: 'edit/:id',
             element: <CategoryForm />
+          }
+        ]
+      },
+      // Brands
+      {
+        path: 'brands',
+        children: [
+          {
+            path: '',
+            element: <BrandList />
+          },
+          {
+            path: 'create',
+            element: <BrandForm />
+          },
+          {
+            path: 'edit/:id',
+            element: <BrandForm />
           }
         ]
       },

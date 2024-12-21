@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Dec 18, 2024 at 07:46 AM
+-- Generation Time: Dec 20, 2024 at 10:53 AM
 -- Server version: 8.0.30
 -- PHP Version: 8.1.10
 
@@ -101,14 +101,14 @@ CREATE TABLE `orders` (
 --
 
 CREATE TABLE `payments` (
-  `id` int NOT NULL,
-  `order_id` int DEFAULT NULL,
-  `amount` decimal(10,2) NOT NULL,
-  `payment_method` enum('cod','banking','momo','vnpay') NOT NULL,
-  `payment_status` enum('pending','completed','failed','refunded') DEFAULT 'pending',
-  `transaction_id` varchar(255) DEFAULT NULL,
-  `payment_date` timestamp NULL DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `ID` int NOT NULL,
+  `OrderID` int DEFAULT NULL,
+  `Amount` decimal(10,2) NOT NULL,
+  `PaymentMethod` enum('cod','banking','momo','vnpay') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci NOT NULL,
+  `PaymentStatus` enum('pending','completed','failed','refunded') CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT 'pending',
+  `TransactionID` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `PaymentDate` timestamp NULL DEFAULT NULL,
+  `CreatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -286,8 +286,8 @@ ALTER TABLE `orders`
 -- Indexes for table `payments`
 --
 ALTER TABLE `payments`
-  ADD PRIMARY KEY (`id`),
-  ADD KEY `order_id` (`order_id`);
+  ADD PRIMARY KEY (`ID`),
+  ADD KEY `order_id` (`OrderID`);
 
 --
 -- Indexes for table `productcolors`
@@ -394,7 +394,7 @@ ALTER TABLE `orders`
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+  MODIFY `ID` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `productcolors`
@@ -478,7 +478,7 @@ ALTER TABLE `orders`
 -- Constraints for table `payments`
 --
 ALTER TABLE `payments`
-  ADD CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`order_id`) REFERENCES `orders` (`OrderID`) ON DELETE CASCADE;
+  ADD CONSTRAINT `payments_ibfk_1` FOREIGN KEY (`OrderID`) REFERENCES `orders` (`OrderID`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `productcolors`

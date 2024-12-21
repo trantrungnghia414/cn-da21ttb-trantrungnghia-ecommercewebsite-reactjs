@@ -105,15 +105,15 @@ CREATE TABLE IF NOT EXISTS OrderDetails (
 
 -- Bảng Payments (Lưu thông tin thanh toán)
 CREATE TABLE payments (
-    id INT PRIMARY KEY AUTO_INCREMENT,
-    order_id INT,
-    amount DECIMAL(10,2) NOT NULL,
-    payment_method ENUM('cod', 'banking', 'momo', 'vnpay') NOT NULL,
-    payment_status ENUM('pending', 'completed', 'failed', 'refunded') DEFAULT 'pending',
-    transaction_id VARCHAR(255),
-    payment_date TIMESTAMP,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (order_id) REFERENCES Orders(OrderID) ON DELETE CASCADE
+    ID INT PRIMARY KEY AUTO_INCREMENT,
+    OrderID INT,
+    Amount DECIMAL(10,2) NOT NULL,
+    PaymentMethod ENUM('cod', 'banking', 'momo', 'vnpay') NOT NULL,
+    PaymentStatus ENUM('pending', 'completed', 'failed', 'refunded') DEFAULT 'pending',
+    TransactionID VARCHAR(255),
+    PaymentDate TIMESTAMP,
+    CreatedAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID) ON DELETE CASCADE
 );
 
 -- Bảng Promotions (Quản lý khuyến mãi)
