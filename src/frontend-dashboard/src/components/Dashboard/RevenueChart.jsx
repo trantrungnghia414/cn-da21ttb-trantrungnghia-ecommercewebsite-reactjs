@@ -11,18 +11,18 @@ import {
 function RevenueChart() {
   // Dữ liệu mẫu
   const data = [
-    { month: 'T1', revenue: 35000000 },
-    { month: 'T2', revenue: 42000000 },
-    { month: 'T3', revenue: 38000000 },
-    { month: 'T4', revenue: 45000000 },
-    { month: 'T5', revenue: 50000000 },
-    { month: 'T6', revenue: 48000000 },
-    { month: 'T7', revenue: 55000000 },
-    { month: 'T8', revenue: 52000000 },
-    { month: 'T9', revenue: 58000000 },
-    { month: 'T10', revenue: 63000000 },
-    { month: 'T11', revenue: 65000000 },
-    { month: 'T12', revenue: 75000000 }
+    { month: 'T1', revenue: 0 },
+    { month: 'T2', revenue: 0 },
+    { month: 'T3', revenue: 0 },
+    { month: 'T4', revenue: 0 },
+    { month: 'T5', revenue: 0 },
+    { month: 'T6', revenue: 0 },
+    { month: 'T7', revenue: 0 },
+    { month: 'T8', revenue: 0 },
+    { month: 'T9', revenue: 0 },
+    { month: 'T10', revenue: 0 },
+    { month: 'T11', revenue: 0 },
+    { month: 'T12', revenue: 0 }
   ];
 
   return (
