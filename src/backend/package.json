@@ -10,8 +10,7 @@
     "license": "ISC",
     "description": "",
     "dependencies": {
-        "express": "^4.21.2",
-        "express-handlebars": "^8.0.1"
+        "express": "^4.21.2"
     },
     "devDependencies": {
         "morgan": "^1.10.0",
