@@ -1,0 +1,28 @@
+backend/
+├── config/
+│   ├── config.js         # Cấu hình database
+│   └── multer.js         # Cấu hình upload file
+├── models/
+│   ├── index.js          # Khởi tạo Sequelize và kết nối models
+│   ├── user.js
+│   ├── product.js
+│   ├── category.js
+│   └── ...
+├── controllers/
+│   ├── authController.js
+│   ├── productController.js
+│   ├── categoryController.js
+│   └── ...
+├── routes/
+│   ├── index.js          # Tập hợp tất cả routes
+│   ├── authRoutes.js
+│   ├── productRoutes.js
+│   └── ...
+├── middlewares/
+│   ├── auth.js           # Middleware xác thực JWT
+│   ├── upload.js         # Middleware xử lý upload
+│   └── error.js          # Middleware xử lý lỗi
+├── utils/
+│   ├── jwt.js            # Các hàm xử lý JWT
+│   └── helpers.js        # Các hàm tiện ích
+└── index.js              # Entry point
