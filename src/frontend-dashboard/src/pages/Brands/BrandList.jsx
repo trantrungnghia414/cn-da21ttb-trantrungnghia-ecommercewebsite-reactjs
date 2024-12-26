@@ -1,37 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PlusIcon } from '@heroicons/react/24/outline';
+import { axiosAppJson } from '~/config/axios.config';
 
 function BrandList() {
-  // Dữ liệu mẫu
-  const [brands] = useState([
-    {
-      BrandID: 1,
-      Name: 'Apple',
-      Description: 'Công nghệ cao cấp từ Mỹ',
-      Status: true,
-      ProductCount: 25
-    },
-    {
-      BrandID: 2,
-      Name: 'Samsung',
-      Description: 'Thương hiệu điện tử hàng đầu Hàn Quốc',
-      Status: true,
-      ProductCount: 30
-    },
-    {
-      BrandID: 3,
-      Name: 'Sony',
-      Description: 'Công nghệ từ Nhật Bản',
-      Status: true,
-      ProductCount: 15
-    }
-  ]);
+  const [brands, setBrands] = useState([]);
+  useEffect( () => {
+    fetchBrands()
+  }, []);
 
-  const handleDelete = (id) => {
-    // Xử lý xóa brand
-    console.log('Delete brand:', id);
-  };
+  const fetchBrands = async () => {
+    const response = await axiosAppJson.get('/brands');
+    setBrands(response.data);
+  }
+
+  const handleDelete = (slug) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa thương hiệu này không?')) {
+      axiosAppJson.delete(`/brands/${slug}`).then(() => {
+        setBrands(brands.filter((brand) => brand.Slug !== slug));
+      }).catch((error) => {
+        console.error('Error deleting brand:', error);
+      });
+    }
+  }
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
@@ -67,48 +58,34 @@ function BrandList() {
                       Mô tả
                     </th>
                     <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Số sản phẩm
+                      Ngày tạo
                     </th>
-                    <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Trạng thái
-                    </th>
-                    <th className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                      <span className="sr-only">Actions</span>
+                    <th className="px-3 py-3.5 text-right text-sm font-semibold text-gray-900">
+                      Hành động
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {brands.map((brand) => (
                     <tr key={brand.BrandID}>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm font-medium text-gray-900">
+                      <td className="px-3 py-4 text-sm font-medium text-gray-900">
                         {brand.Name}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <td className="w-[60%] px-3 py-4 text-sm text-gray-500">
                         {brand.Description}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {brand.ProductCount}
+                      <td className="px-3 py-4 text-sm text-gray-500">
+                        {brand.CreatedAt}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm">
-                        <span
-                          className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                            brand.Status
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
-                          }`}
-                        >
-                          {brand.Status ? 'Hoạt động' : 'Không hoạt động'}
-                        </span>
-                      </td>
-                      <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                      <td className="relative py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                         <Link
-                          to={`/admin/brands/edit/${brand.BrandID}`}
+                          to={`/admin/brands/edit/${brand.Slug}`}
                           className="text-blue-600 hover:text-blue-900 mr-4"
                         >
                           Sửa
                         </Link>
                         <button
-                          onClick={() => handleDelete(brand.BrandID)}
+                          onClick={() => handleDelete(brand.Slug)}
                           className="text-red-600 hover:text-red-900"
                         >
                           Xóa

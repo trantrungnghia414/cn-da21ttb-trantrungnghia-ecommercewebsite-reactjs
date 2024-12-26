@@ -1,43 +1,28 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PlusIcon } from '@heroicons/react/24/outline';
+import {axiosAppJson} from '~/config/axios.config';
 
 function CategoryList() {
-  // Dữ liệu mẫu
-  const [categories] = useState([
-    {
-      CategoryID: 1,
-      Name: 'Điện thoại',
-      Description: 'Điện thoại di động các loại',
-      Status: true,
-      ProductCount: 15
-    },
-    {
-      CategoryID: 2, 
-      Name: 'Laptop',
-      Description: 'Máy tính xách tay',
-      Status: true,
-      ProductCount: 20
-    },
-    {
-      CategoryID: 3,
-      Name: 'Tablet',
-      Description: 'Máy tính bảng',
-      Status: true,
-      ProductCount: 8
-    },
-    {
-      CategoryID: 4,
-      Name: 'Phụ kiện',
-      Description: 'Phụ kiện điện thoại, máy tính',
-      Status: false,
-      ProductCount: 50
-    }
-  ]);
 
-  const handleDelete = (id) => {
-    // Xử lý xóa category
-    console.log('Delete category:', id);
+  const [categories, setCategories] = useState([]);
+  useEffect( () => {
+    fetchCategories()
+  }, []);
+
+  const fetchCategories = async () => {
+    const response = await axiosAppJson.get('/categories');
+    setCategories(response.data);
+  }
+
+  const handleDelete = (slug) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa danh mục này không?')) {
+      axiosAppJson.delete(`/categories/${slug}`).then(() => {
+        setCategories(categories.filter((category) => category.Slug !== slug));
+      }).catch((error) => {
+        console.error('Error deleting category:', error);
+      });
+    }
   };
 
   return (
@@ -74,48 +59,34 @@ function CategoryList() {
                       Mô tả
                     </th>
                     <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Số sản phẩm
+                      Ngày tạo
                     </th>
-                    <th className="px-3 py-3.5 text-left text-sm font-semibold text-gray-900">
-                      Trạng thái
-                    </th>
-                    <th className="relative py-3.5 pl-3 pr-4 sm:pr-6">
-                      <span className="sr-only">Actions</span>
+                    <th className="py-3.5 pl-3 pr-4 text-right text-sm font-semibold text-gray-900">
+                      Hành động
                     </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
                   {categories.map((category) => (
                     <tr key={category.CategoryID}>
-                      <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
+                      <td className="py-4 pl-4 pr-3 text-sm font-medium text-gray-900">
                         {category.Name}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                      <td className="w-[60%] px-3 py-4 text-sm text-gray-500">
                         {category.Description}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                        {category.ProductCount}
+                      <td className="px-3 py-4 text-sm text-gray-500">
+                        {category.CreatedAt}
                       </td>
-                      <td className="whitespace-nowrap px-3 py-4 text-sm">
-                        <span
-                          className={`inline-flex rounded-full px-2 text-xs font-semibold leading-5 ${
-                            category.Status
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
-                          }`}
-                        >
-                          {category.Status ? 'Hoạt động' : 'Không hoạt động'}
-                        </span>
-                      </td>
-                      <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                      <td className="relative py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                         <Link
-                          to={`/admin/categories/edit/${category.CategoryID}`}
+                          to={`/admin/categories/edit/${category.Slug}`}
                           className="text-blue-600 hover:text-blue-900 mr-4"
                         >
                           Sửa
                         </Link>
                         <button
-                          onClick={() => handleDelete(category.CategoryID)}
+                          onClick={() => handleDelete(category.Slug)}
                           className="text-red-600 hover:text-red-900"
                         >
                           Xóa

@@ -1,22 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 function ProductEdit() {
     const { id } = useParams();
     const navigate = useNavigate();
-    
-    const [categories] = useState([
-        { CategoryID: 1, Name: "Điện thoại" },
-        { CategoryID: 2, Name: "Laptop" },
-        { CategoryID: 3, Name: "Tablet" },
-        { CategoryID: 4, Name: "Phụ kiện" }
-    ]);
-    
-    const [brands] = useState([
-        { BrandID: 1, Name: "Apple" },
+
+    const [categories] = useState([]);
+
+    const [brands] = useState([        { BrandID: 1, Name: "Apple" },
         { BrandID: 2, Name: "Samsung" },
         { BrandID: 3, Name: "Xiaomi" },
-        { BrandID: 4, Name: "ASUS" }
+        { BrandID: 4, Name: "ASUS" },
     ]);
 
     const [formData, setFormData] = useState({
@@ -29,16 +23,16 @@ function ProductEdit() {
             {
                 ColorName: "",
                 ColorCode: "",
-                Images: [] // [{file, preview}]
-            }
+                Images: [], // [{file, preview}]
+            },
         ],
         variants: [
             {
                 MemorySize: "",
                 Price: "",
-                Stock: 0
-            }
-        ]
+                Stock: 0,
+            },
+        ],
     });
 
     const [errors, setErrors] = useState({});
@@ -60,18 +54,18 @@ function ProductEdit() {
                             Images: [
                                 {
                                     preview: "url-to-image-1",
-                                    file: null
-                                }
-                            ]
-                        }
+                                    file: null,
+                                },
+                            ],
+                        },
                     ],
                     variants: [
                         {
                             MemorySize: "256GB",
                             Price: "32990000",
-                            Stock: 10
-                        }
-                    ]
+                            Stock: 10,
+                        },
+                    ],
                 });
             } catch (error) {
                 console.error("Lỗi khi tải thông tin sản phẩm:", error);
@@ -84,21 +78,21 @@ function ProductEdit() {
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            [name]: value
+            [name]: value,
         }));
         if (errors[name]) {
-            setErrors(prev => ({ ...prev, [name]: "" }));
+            setErrors((prev) => ({ ...prev, [name]: "" }));
         }
     };
 
     const handleColorChange = (colorIndex, field, value) => {
-        setFormData(prev => {
+        setFormData((prev) => {
             const newColors = [...prev.colors];
             newColors[colorIndex] = {
                 ...newColors[colorIndex],
-                [field]: value
+                [field]: value,
             };
             return { ...prev, colors: newColors };
         });
@@ -106,95 +100,105 @@ function ProductEdit() {
 
     const handleImageUpload = (colorIndex, e) => {
         const files = Array.from(e.target.files);
-        setFormData(prev => {
+        setFormData((prev) => {
             const newColors = [...prev.colors];
             newColors[colorIndex] = {
                 ...newColors[colorIndex],
-                Images: files.map(file => ({
+                Images: files.map((file) => ({
                     file,
-                    preview: URL.createObjectURL(file)
-                }))
+                    preview: URL.createObjectURL(file),
+                })),
             };
             return { ...prev, colors: newColors };
         });
     };
 
-    const addColor = () => {
-        setFormData(prev => ({
-            ...prev,
-            colors: [...prev.colors, {
+    const addColor = useCallback((variantIndex) => {
+        console.log(`Adding color to variant ${variantIndex} in Edit`);
+        setFormData((prev) => {
+            const newVariants = [...prev.variants];
+            newVariants[variantIndex].colors.push({
                 ColorName: "",
                 ColorCode: "",
-                Images: []
-            }]
-        }));
-    };
+                Stock: 0,
+                Images: [],
+            });
+            console.log("Updated formData in Edit:", newVariants);
+            return { ...prev, variants: newVariants };
+        });
+    }, []);
 
     const removeColor = (colorIndex) => {
-        setFormData(prev => {
-            prev.colors[colorIndex].Images.forEach(image => {
-                if (image.preview.startsWith('blob:')) {
+        setFormData((prev) => {
+            prev.colors[colorIndex].Images.forEach((image) => {
+                if (image.preview.startsWith("blob:")) {
                     URL.revokeObjectURL(image.preview);
                 }
             });
             return {
                 ...prev,
-                colors: prev.colors.filter((_, index) => index !== colorIndex)
+                colors: prev.colors.filter((_, index) => index !== colorIndex),
             };
         });
     };
 
     const removeImage = (colorIndex, imageIndex) => {
-        setFormData(prev => {
+        setFormData((prev) => {
             const newColors = [...prev.colors];
             const newImages = [...newColors[colorIndex].Images];
-            if (newImages[imageIndex].preview.startsWith('blob:')) {
+            if (newImages[imageIndex].preview.startsWith("blob:")) {
                 URL.revokeObjectURL(newImages[imageIndex].preview);
             }
             newImages.splice(imageIndex, 1);
             newColors[colorIndex] = {
                 ...newColors[colorIndex],
-                Images: newImages
+                Images: newImages,
             };
             return { ...prev, colors: newColors };
         });
     };
 
     const handleVariantChange = (variantIndex, field, value) => {
-        setFormData(prev => {
+        setFormData((prev) => {
             const newVariants = [...prev.variants];
             newVariants[variantIndex] = {
                 ...newVariants[variantIndex],
-                [field]: value
+                [field]: value,
             };
             return { ...prev, variants: newVariants };
         });
     };
 
     const addVariant = () => {
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            variants: [...prev.variants, {
-                MemorySize: "",
-                Price: "",
-                Stock: 0
-            }]
+            variants: [
+                ...prev.variants,
+                {
+                    MemorySize: "",
+                    Price: "",
+                    Stock: 0,
+                },
+            ],
         }));
     };
 
     const removeVariant = (variantIndex) => {
-        setFormData(prev => ({
+        setFormData((prev) => ({
             ...prev,
-            variants: prev.variants.filter((_, index) => index !== variantIndex)
+            variants: prev.variants.filter(
+                (_, index) => index !== variantIndex
+            ),
         }));
     };
 
     const validateForm = () => {
         const newErrors = {};
         if (!formData.Name) newErrors.Name = "Vui lòng nhập tên sản phẩm";
-        if (!formData.CategoryID) newErrors.CategoryID = "Vui lòng chọn danh mục";
+        if (!formData.CategoryID)
+            newErrors.CategoryID = "Vui lòng chọn danh mục";
         if (!formData.BrandID) newErrors.BrandID = "Vui lòng chọn thương hiệu";
-        
+
         formData.colors.forEach((color, colorIndex) => {
             if (!color.ColorName) {
                 newErrors[`color${colorIndex}Name`] = "Vui lòng nhập tên màu";
@@ -203,7 +207,8 @@ function ProductEdit() {
 
         formData.variants.forEach((variant, variantIndex) => {
             if (!variant.MemorySize) {
-                newErrors[`variant${variantIndex}MemorySize`] = "Vui lòng nhập dung lượng";
+                newErrors[`variant${variantIndex}MemorySize`] =
+                    "Vui lòng nhập dung lượng";
             }
             if (!variant.Price) {
                 newErrors[`variant${variantIndex}Price`] = "Vui lòng nhập giá";
@@ -220,7 +225,7 @@ function ProductEdit() {
 
         try {
             const formDataToSend = new FormData();
-            
+
             // Thông tin cơ bản
             formDataToSend.append("Name", formData.Name);
             formDataToSend.append("Slug", formData.Slug);
@@ -230,20 +235,29 @@ function ProductEdit() {
 
             // Màu sắc và ảnh
             formData.colors.forEach((color, colorIndex) => {
-                formDataToSend.append(`colors[${colorIndex}]`, JSON.stringify({
-                    ColorName: color.ColorName,
-                    ColorCode: color.ColorCode
-                }));
+                formDataToSend.append(
+                    `colors[${colorIndex}]`,
+                    JSON.stringify({
+                        ColorName: color.ColorName,
+                        ColorCode: color.ColorCode,
+                    })
+                );
 
                 color.Images.forEach((image) => {
                     if (image.file) {
-                        formDataToSend.append(`colorImages[${colorIndex}]`, image.file);
+                        formDataToSend.append(
+                            `colorImages[${colorIndex}]`,
+                            image.file
+                        );
                     }
                 });
             });
 
             // Biến thể
-            formDataToSend.append("variants", JSON.stringify(formData.variants));
+            formDataToSend.append(
+                "variants",
+                JSON.stringify(formData.variants)
+            );
 
             // TODO: Gọi API cập nhật sản phẩm
             console.log("Cập nhật sản phẩm:", formDataToSend);
@@ -279,7 +293,9 @@ function ProductEdit() {
                                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                 />
                                 {errors.Name && (
-                                    <p className="mt-1 text-sm text-red-500">{errors.Name}</p>
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {errors.Name}
+                                    </p>
                                 )}
                             </div>
 
@@ -317,7 +333,9 @@ function ProductEdit() {
                                     ))}
                                 </select>
                                 {errors.CategoryID && (
-                                    <p className="mt-1 text-sm text-red-500">{errors.CategoryID}</p>
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {errors.CategoryID}
+                                    </p>
                                 )}
                             </div>
 
@@ -342,7 +360,9 @@ function ProductEdit() {
                                     ))}
                                 </select>
                                 {errors.BrandID && (
-                                    <p className="mt-1 text-sm text-red-500">{errors.BrandID}</p>
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {errors.BrandID}
+                                    </p>
                                 )}
                             </div>
                         </div>
@@ -350,7 +370,9 @@ function ProductEdit() {
                         {/* Phần màu sắc */}
                         <div className="mt-6">
                             <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-medium text-gray-900">Màu sắc sản phẩm</h3>
+                                <h3 className="text-lg font-medium text-gray-900">
+                                    Màu sắc sản phẩm
+                                </h3>
                                 <button
                                     type="button"
                                     onClick={addColor}
@@ -361,7 +383,10 @@ function ProductEdit() {
                             </div>
 
                             {formData.colors.map((color, colorIndex) => (
-                                <div key={colorIndex} className="border rounded-lg p-4 mb-4">
+                                <div
+                                    key={colorIndex}
+                                    className="border rounded-lg p-4 mb-4"
+                                >
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700">
@@ -370,12 +395,24 @@ function ProductEdit() {
                                             <input
                                                 type="text"
                                                 value={color.ColorName}
-                                                onChange={(e) => handleColorChange(colorIndex, "ColorName", e.target.value)}
+                                                onChange={(e) =>
+                                                    handleColorChange(
+                                                        colorIndex,
+                                                        "ColorName",
+                                                        e.target.value
+                                                    )
+                                                }
                                                 className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                             />
-                                            {errors[`color${colorIndex}Name`] && (
+                                            {errors[
+                                                `color${colorIndex}Name`
+                                            ] && (
                                                 <p className="mt-1 text-sm text-red-500">
-                                                    {errors[`color${colorIndex}Name`]}
+                                                    {
+                                                        errors[
+                                                            `color${colorIndex}Name`
+                                                        ]
+                                                    }
                                                 </p>
                                             )}
                                         </div>
@@ -387,7 +424,13 @@ function ProductEdit() {
                                             <input
                                                 type="text"
                                                 value={color.ColorCode}
-                                                onChange={(e) => handleColorChange(colorIndex, "ColorCode", e.target.value)}
+                                                onChange={(e) =>
+                                                    handleColorChange(
+                                                        colorIndex,
+                                                        "ColorCode",
+                                                        e.target.value
+                                                    )
+                                                }
                                                 className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                             />
                                         </div>
@@ -400,28 +443,60 @@ function ProductEdit() {
                                                 type="file"
                                                 multiple
                                                 accept="image/*"
-                                                onChange={(e) => handleImageUpload(colorIndex, e)}
+                                                onChange={(e) =>
+                                                    handleImageUpload(
+                                                        colorIndex,
+                                                        e
+                                                    )
+                                                }
                                                 className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                             />
                                             <div className="mt-2 grid grid-cols-4 gap-2">
-                                                {color.Images.map((image, imageIndex) => (
-                                                    <div key={imageIndex} className="relative">
-                                                        <img
-                                                            src={image.preview}
-                                                            alt={`Preview ${imageIndex + 1}`}
-                                                            className="h-20 w-20 object-cover rounded-lg"
-                                                        />
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => removeImage(colorIndex, imageIndex)}
-                                                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                                {color.Images.map(
+                                                    (image, imageIndex) => (
+                                                        <div
+                                                            key={imageIndex}
+                                                            className="relative"
                                                         >
-                                                            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                            </svg>
-                                                        </button>
-                                                    </div>
-                                                ))}
+                                                            <img
+                                                                src={
+                                                                    image.preview
+                                                                }
+                                                                alt={`Preview ${
+                                                                    imageIndex +
+                                                                    1
+                                                                }`}
+                                                                className="h-20 w-20 object-cover rounded-lg"
+                                                            />
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    removeImage(
+                                                                        colorIndex,
+                                                                        imageIndex
+                                                                    )
+                                                                }
+                                                                className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                                            >
+                                                                <svg
+                                                                    className="h-4 w-4"
+                                                                    fill="none"
+                                                                    viewBox="0 0 24 24"
+                                                                    stroke="currentColor"
+                                                                >
+                                                                    <path
+                                                                        strokeLinecap="round"
+                                                                        strokeLinejoin="round"
+                                                                        strokeWidth={
+                                                                            2
+                                                                        }
+                                                                        d="M6 18L18 6M6 6l12 12"
+                                                                    />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    )
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -429,7 +504,9 @@ function ProductEdit() {
                                     {colorIndex > 0 && (
                                         <button
                                             type="button"
-                                            onClick={() => removeColor(colorIndex)}
+                                            onClick={() =>
+                                                removeColor(colorIndex)
+                                            }
                                             className="mt-4 text-red-600 hover:text-red-800"
                                         >
                                             Xóa màu này
@@ -442,7 +519,9 @@ function ProductEdit() {
                         {/* Phần biến thể */}
                         <div className="mt-8">
                             <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-medium text-gray-900">Biến thể sản phẩm</h3>
+                                <h3 className="text-lg font-medium text-gray-900">
+                                    Biến thể sản phẩm
+                                </h3>
                                 <button
                                     type="button"
                                     onClick={addVariant}
@@ -453,7 +532,10 @@ function ProductEdit() {
                             </div>
 
                             {formData.variants.map((variant, variantIndex) => (
-                                <div key={variantIndex} className="border rounded-lg p-4 mb-4">
+                                <div
+                                    key={variantIndex}
+                                    className="border rounded-lg p-4 mb-4"
+                                >
                                     <div className="grid grid-cols-3 gap-4">
                                         <div>
                                             <label className="block text-sm font-medium text-gray-700">
@@ -462,13 +544,25 @@ function ProductEdit() {
                                             <input
                                                 type="text"
                                                 value={variant.MemorySize}
-                                                onChange={(e) => handleVariantChange(variantIndex, "MemorySize", e.target.value)}
+                                                onChange={(e) =>
+                                                    handleVariantChange(
+                                                        variantIndex,
+                                                        "MemorySize",
+                                                        e.target.value
+                                                    )
+                                                }
                                                 placeholder="VD: 128GB"
                                                 className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                             />
-                                            {errors[`variant${variantIndex}MemorySize`] && (
+                                            {errors[
+                                                `variant${variantIndex}MemorySize`
+                                            ] && (
                                                 <p className="mt-1 text-sm text-red-500">
-                                                    {errors[`variant${variantIndex}MemorySize`]}
+                                                    {
+                                                        errors[
+                                                            `variant${variantIndex}MemorySize`
+                                                        ]
+                                                    }
                                                 </p>
                                             )}
                                         </div>
@@ -480,12 +574,24 @@ function ProductEdit() {
                                             <input
                                                 type="number"
                                                 value={variant.Price}
-                                                onChange={(e) => handleVariantChange(variantIndex, "Price", e.target.value)}
+                                                onChange={(e) =>
+                                                    handleVariantChange(
+                                                        variantIndex,
+                                                        "Price",
+                                                        e.target.value
+                                                    )
+                                                }
                                                 className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                             />
-                                            {errors[`variant${variantIndex}Price`] && (
+                                            {errors[
+                                                `variant${variantIndex}Price`
+                                            ] && (
                                                 <p className="mt-1 text-sm text-red-500">
-                                                    {errors[`variant${variantIndex}Price`]}
+                                                    {
+                                                        errors[
+                                                            `variant${variantIndex}Price`
+                                                        ]
+                                                    }
                                                 </p>
                                             )}
                                         </div>
@@ -497,7 +603,13 @@ function ProductEdit() {
                                             <input
                                                 type="number"
                                                 value={variant.Stock}
-                                                onChange={(e) => handleVariantChange(variantIndex, "Stock", e.target.value)}
+                                                onChange={(e) =>
+                                                    handleVariantChange(
+                                                        variantIndex,
+                                                        "Stock",
+                                                        e.target.value
+                                                    )
+                                                }
                                                 className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                             />
                                         </div>
@@ -506,7 +618,9 @@ function ProductEdit() {
                                     {variantIndex > 0 && (
                                         <button
                                             type="button"
-                                            onClick={() => removeVariant(variantIndex)}
+                                            onClick={() =>
+                                                removeVariant(variantIndex)
+                                            }
                                             className="mt-4 text-red-600 hover:text-red-800"
                                         >
                                             Xóa biến thể này
@@ -519,7 +633,9 @@ function ProductEdit() {
 
                     {errors.submit && (
                         <div className="px-4 py-3 bg-red-50">
-                            <p className="text-sm text-red-500">{errors.submit}</p>
+                            <p className="text-sm text-red-500">
+                                {errors.submit}
+                            </p>
                         </div>
                     )}
 

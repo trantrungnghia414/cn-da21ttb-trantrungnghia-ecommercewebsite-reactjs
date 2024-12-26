@@ -58,7 +58,7 @@ const router = createBrowserRouter([
             element: <ProductCreate />
           },
           {
-            path: 'edit/:id',
+            path: 'edit/:slug',
             element: <ProductEdit />
           }
         ]
@@ -76,7 +76,7 @@ const router = createBrowserRouter([
             element: <CategoryForm />
           },
           {
-            path: 'edit/:id',
+            path: 'edit/:slug',
             element: <CategoryForm />
           }
         ]
@@ -94,7 +94,7 @@ const router = createBrowserRouter([
             element: <BrandForm />
           },
           {
-            path: 'edit/:id',
+            path: 'edit/:slug',
             element: <BrandForm />
           }
         ]

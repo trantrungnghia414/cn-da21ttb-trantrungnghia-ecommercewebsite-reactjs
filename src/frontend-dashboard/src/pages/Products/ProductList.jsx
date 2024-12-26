@@ -1,118 +1,27 @@
-import { useState } from 'react';
+import { useState, useEffect} from 'react';
 import { Link } from 'react-router-dom';
 import { PlusIcon } from '@heroicons/react/24/outline';
+import { axiosAppJson } from '~/config/axios.config';
 
 function ProductList() {
-  // Dữ liệu mẫu với cấu trúc variants mới
-  const [products] = useState([
-    {
-      ProductID: 1,
-      Name: 'iPhone 15 Pro Max',
-      Slug: 'iphone-15-pro-max',
-      Description: 'iPhone 15 Pro Max',
-      CategoryID: 1,
-      BrandID: 1,
-      category: { Name: 'Điện thoại' },
-      brand: { Name: 'Apple' },
-      colors: [
-        { 
-          ColorName: 'Titan Tự Nhiên',
-          ColorCode: '#E3C4A8',
-        },
-        {
-          ColorName: 'Titan Xanh',
-          ColorCode: '#4B4F5E',
-        }
-      ],
-      variants: [
-        {
-          MemorySize: '256GB',
-          Price: 32990000,
-          Stock: 10
-        },
-        {
-          MemorySize: '512GB',
-          Price: 38990000,
-          Stock: 5
-        }
-      ]
-    },
-    {
-      ProductID: 2,
-      Name: 'MacBook Air M2',
-      Slug: 'macbook-air-m2',
-      Description: 'MacBook Air M2 8GB RAM 256GB SSD',
-      Price: 27990000,
-      CategoryID: 2,
-      BrandID: 1,
-      InStock: true,
-      category: { Name: 'Laptop' },
-      brand: { Name: 'Apple' },
-      colors: [
-        { 
-          ColorName: 'Titan Tự Nhiên',
-          ColorCode: '#E3C4A8',
-        },
-        {
-          ColorName: 'Titan Xanh',
-          ColorCode: '#4B4F5E',
-        }
-      ],
-      variants: [
-        {
-          MemorySize: '256GB',
-          Price: 32990000,
-          Stock: 10
-        },
-        {
-          MemorySize: '512GB',
-          Price: 38990000,
-          Stock: 5
-        }
-      ]
-    },
-    {
-      ProductID: 3,
-      Name: 'Samsung Galaxy S24 Ultra',
-      Slug: 'samsung-galaxy-s24-ultra',
-      Description: 'Samsung Galaxy S24 Ultra 256GB',
-      Price: 29990000,
-      CategoryID: 1,
-      BrandID: 2,
-      InStock: false,
-      category: { Name: 'Điện thoại' },
-      brand: { Name: 'Samsung' },
-      colors: [
-        { 
-          ColorName: 'Titan Tự Nhiên',
-          ColorCode: '#E3C4A8',
-        },
-        {
-          ColorName: 'Titan Xanh',
-          ColorCode: '#4B4F5E',
-        }
-      ],
-      variants: [
-        {
-          MemorySize: '256GB',
-          Price: 32990000,
-          Stock: 10
-        },
-        {
-          MemorySize: '512GB',
-          Price: 38990000,
-          Stock: 5
-        }
-      ]
-    }
-  ]);
 
-  const handleDelete = (id) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')) {
-      // Xử lý xóa sản phẩm
-      console.log('Xóa sản phẩm:', id);
-    }
-  };
+  const [products, setProducts] = useState([]);
+
+  const fetchProducts = async () => {
+    const response = await axiosAppJson.get('/products');
+    setProducts(response.data);
+  }
+
+  useEffect(() => {
+    fetchProducts();
+  }
+  , []);
+
+  const handleDelete = async (id) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa sản phẩm này không?')) return;
+    await axiosAppJson.delete(`/products/${id}`);
+    fetchProducts();
+  }
 
   return (
     <div className="px-4 sm:px-6 lg:px-8">
