@@ -10,6 +10,7 @@ function ProductCreate() {
         Description: "",
         CategoryID: "",
         BrandID: "",
+        SupplierID: "",
         variants: [
             {
                 MemorySize: "",
@@ -27,45 +28,51 @@ function ProductCreate() {
     });
     const [categories, setCategories] = useState([]);
     const [brands, setBrands] = useState([]);
+    const [suppliers, setSuppliers] = useState([]);
     const [errors, setErrors] = useState({});
 
     useEffect(() => {
-        const fetchCategoriesAndBrands = async () => {
+        const fetchCategoriesAndBrandsAndSuppliers = async () => {
             try {
-                const [categoriesResponse, brandsResponse] = await Promise.all([
-                    axiosAppJson.get("/categories"),
-                    axiosAppJson.get("/brands"),
-                ]);
+                const [categoriesResponse, brandsResponse, suppliersResponse] =
+                    await Promise.all([
+                        axiosAppJson.get("/categories"),
+                        axiosAppJson.get("/brands"),
+                        axiosAppJson.get("/suppliers"),
+                    ]);
                 setCategories(categoriesResponse.data);
                 setBrands(brandsResponse.data);
+                setSuppliers(suppliersResponse.data);
             } catch (error) {
                 console.error("Error fetching categories and brands:", error);
             }
         };
 
-        fetchCategoriesAndBrands();
+        fetchCategoriesAndBrandsAndSuppliers();
     }, []);
 
     const handleChange = (e) => {
-      const { name, value } = e.target;
-      setFormData((prev) => ({
-        ...prev,
-        [name]: value,
-        // Thêm Slug tự động dựa vào tên sản phẩm
-        ...(name === 'Name' ? {
-          Slug: value
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .replace(/[đĐ]/g, 'd')
-            .replace(/[^a-z0-9]+/g, '-')
-            .replace(/^-+|-+$/g, '')
-        } : {})
-      }));
-      
-      if (errors[name]) {
-        setErrors((prev) => ({ ...prev, [name]: "" }));
-      }
+        const { name, value } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [name]: value,
+            // Thêm Slug tự động dựa vào tên sản phẩm
+            ...(name === "Name"
+                ? {
+                      Slug: value
+                          .toLowerCase()
+                          .normalize("NFD")
+                          .replace(/[\u0300-\u036f]/g, "")
+                          .replace(/[đĐ]/g, "d")
+                          .replace(/[^a-z0-9]+/g, "-")
+                          .replace(/^-+|-+$/g, ""),
+                  }
+                : {}),
+        }));
+
+        if (errors[name]) {
+            setErrors((prev) => ({ ...prev, [name]: "" }));
+        }
     };
 
     const handleVariantChange = (variantIndex, field, value) => {
@@ -125,14 +132,7 @@ function ProductCreate() {
                 {
                     MemorySize: "",
                     Price: "",
-                    colors: [
-                        {
-                            ColorName: "",
-                            ColorCode: "",
-                            Stock: 0,
-                            Images: [],
-                        },
-                    ],
+                    Stock: 0,
                 },
             ],
         }));
@@ -203,46 +203,45 @@ function ProductCreate() {
         });
 
         setErrors(newErrors);
+        console.log("Kiểm tra tính hợp lệ của form:", newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!validateForm()) return;
+    e.preventDefault();
+    if (!validateForm()) return;
 
-        try {
-            const productResponse = await axiosAppJson.post("/products", {
-                Name: formData.Name,
-                Slug: formData.Slug,
-                Description: formData.Description,
-                CategoryID: formData.CategoryID,
-                BrandID: formData.BrandID,
-            });
-
-            const productID = productResponse.data.ProductID;
-
-            const variantPromises = formData.variants.map((variant) => {
-                return axiosAppJson.post(`/products/${productID}/variants`, {
-                    MemorySize: variant.MemorySize,
-                    Price: variant.Price,
-                    colors: variant.colors.map((color) => ({
-                        ColorName: color.ColorName,
-                        ColorCode: color.ColorCode,
-                        Stock: color.Stock,
-                        Images: color.Images.map((image) => ({
-                            ImageURL: image.preview, // Assuming `preview` contains the URL of the image
-                        })),
+    try {
+        const formDataToSend = {
+            Name: formData.Name,
+            Slug: formData.Slug,
+            Description: formData.Description,
+            CategoryID: formData.CategoryID,
+            BrandID: formData.BrandID,
+            SupplierID: formData.SupplierID,
+            variants: formData.variants.map((variant) => ({
+                MemorySize: variant.MemorySize,
+                Price: variant.Price,
+                colors: variant.colors.map((color) => ({
+                    ColorName: color.ColorName,
+                    ColorCode: color.ColorCode,
+                    Stock: color.Stock,
+                    Images: color.Images.map((image) => ({
+                        ImageURL: image.ImageURL,
                     })),
-                });
-            });
+                })),
+            })),
+        };
 
-            await Promise.all(variantPromises);
+        const response = await axiosAppJson.post("/products", formDataToSend);
 
-            navigate("/admin/products");
-        } catch (error) {
-            console.error("Error:", error);
-        }
-    };
+        console.log("Sản phẩm đã được tạo:", response.data);
+        navigate("/admin/products");
+    } catch (error) {
+        console.error("Lỗi khi tạo sản phẩm:", error);
+        setErrors({ submit: "Có lỗi xảy ra khi tạo sản phẩm" });
+    }
+};
 
     return (
         <div className="max-w-4xl mx-auto py-6 sm:px-6 lg:px-8">
@@ -349,6 +348,33 @@ function ProductCreate() {
                                 {errors.BrandID && (
                                     <p className="mt-1 text-sm text-red-500">
                                         {errors.BrandID}
+                                    </p>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Nhà cung cấp
+                                </label>
+                                <select
+                                    name="SupplierID"
+                                    value={formData.SupplierID}
+                                    onChange={handleChange}
+                                    className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                >
+                                    <option value="">Chọn nhà cung cấp</option>
+                                    {suppliers.map((supplier) => (
+                                        <option
+                                            key={supplier.SupplierID}
+                                            value={supplier.SupplierID}
+                                        >
+                                            {supplier.Name}
+                                        </option>
+                                    ))}
+                                </select>
+                                {errors.SupplierID && (
+                                    <p className="mt-1 text-sm text-red-500">
+                                        {errors.SupplierID}
                                     </p>
                                 )}
                             </div>

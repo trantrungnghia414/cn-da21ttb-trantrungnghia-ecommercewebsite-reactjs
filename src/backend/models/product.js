@@ -1,4 +1,3 @@
-// backend/models/product.js
 module.exports = (sequelize, DataTypes) => {
   const Product = sequelize.define('Product', {
     ProductID: {
@@ -11,6 +10,10 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: false,
     },
     BrandID: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    SupplierID: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
@@ -44,9 +47,9 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'BrandID',
       as: 'brand',
     });
-    Product.hasMany(models.ProductColor, {
-      foreignKey: 'ProductID',
-      as: 'colors',
+    Product.belongsTo(models.Supplier, {
+      foreignKey: 'SupplierID',
+      as: 'supplier',
     });
     Product.hasMany(models.ProductVariant, {
       foreignKey: 'ProductID',

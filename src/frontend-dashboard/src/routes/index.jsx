@@ -15,6 +15,8 @@ import PromotionList from '../pages/Promotions/PromotionList';
 import PromotionForm from '../pages/Promotions/PromotionForm';
 import BrandList from '~/pages/Brands/BrandList';
 import BrandForm from '~/pages/Brands/BrandForm';
+import SupplierList from '~/pages/Suppliers/SupplierList';
+import SupplierForm from '~/pages/Suppliers/SupplierForm';
 
 // Error Page
 const ErrorPage = () => {
@@ -96,6 +98,24 @@ const router = createBrowserRouter([
           {
             path: 'edit/:slug',
             element: <BrandForm />
+          }
+        ]
+      },
+      // Suppliers
+      {
+        path: 'suppliers',
+        children: [
+          {
+            path: '',
+            element: <SupplierList />
+          },
+          {
+            path: 'create',
+            element: <SupplierForm />
+          },
+          {
+            path: 'edit/:id',
+            element: <SupplierForm />
           }
         ]
       },

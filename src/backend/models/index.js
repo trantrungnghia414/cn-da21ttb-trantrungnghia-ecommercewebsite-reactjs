@@ -13,6 +13,7 @@ db.ProductImage = require('./productimage')(sequelize, Sequelize);
 db.ProductVariant = require('./productvariant')(sequelize, Sequelize);
 db.Category = require('./category')(sequelize, Sequelize);
 db.Brand = require('./brand')(sequelize, Sequelize);
+db.Supplier = require('./supplier')(sequelize, Sequelize);
 
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {
