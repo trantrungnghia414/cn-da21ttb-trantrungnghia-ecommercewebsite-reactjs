@@ -4,7 +4,7 @@ const path = require('path');
 // Định nghĩa nơi lưu trữ tệp
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        cb(null, path.join(__dirname, '../assets/image/products')); // Đường dẫn đến thư mục @products
+        cb(null, path.join(__dirname, '../assets/image/products')); // Đường dẫn đến thư mục lưu trữ ảnh sản phẩm
     },
     filename: (req, file, cb) => {
         const formattedName = file.originalname

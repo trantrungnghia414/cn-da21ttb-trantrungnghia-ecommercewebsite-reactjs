@@ -78,6 +78,27 @@ exports.createProduct = async (req, res) => {
                 );
             }
 
+            const path = require("path"); // Nhập khẩu module path
+
+            const formatImageName = (name) => {
+                const randomSuffix = Math.floor(Math.random() * 1000000); // Tạo số ngẫu nhiên từ 0 đến 999999
+                const extension = path.extname(name); // Lấy đuôi tệp (ví dụ: .png, .jpg)
+
+                // Lấy tên tệp mà không có đuôi
+                const baseName = path
+                    .basename(name, extension) // Lấy tên tệp mà không có đuôi
+                    .toLowerCase() // Chuyển đổi thành chữ thường
+                    .normalize("NFD") // Chuẩn hóa chuỗi
+                    .replace(/[\u0300-\u036f]/g, "") // Xóa dấu
+                    .replace(/[đĐ]/g, "d") // Thay thế ký tự đặc biệt
+                    .replace(/[^a-z0-9\s]+/g, "") // Thay thế ký tự không hợp lệ bằng khoảng trắng
+                    .trim() // Xóa khoảng trắng ở đầu và cuối
+                    .replace(/\s+/g, "-"); // Thay thế khoảng trắng bằng dấu gạch ngang
+
+                // Trả về tên tệp với số ngẫu nhiên và đuôi tệp chỉ được thêm một lần
+                return `${baseName}-${randomSuffix}${extension}`; // Thêm số ngẫu nhiên và đuôi tệp
+            };
+
             if (variant.colors && variant.colors.length > 0) {
                 for (const color of variant.colors) {
                     const colorName = color.ColorName.trim();
@@ -90,33 +111,28 @@ exports.createProduct = async (req, res) => {
                         );
                     }
 
+                    const formattedImages = color.Images.map((image) => ({
+                        ImageURL: formatImageName(image.ImageURL),
+                    }));
+
                     const productColor = await db.ProductColor.create(
                         {
                             VariantID: productVariant.VariantID,
-                            ColorName: colorName,
-                            ColorCode: colorCode,
-                            Stock: stock,
+                            ColorName: color.ColorName,
+                            ColorCode: color.ColorCode,
+                            Stock: color.Stock,
                         },
                         { transaction }
                     );
 
-                    if (color.Images && color.Images.length > 0) {
-                        for (const image of color.Images) {
-                            if (image.ImageURL) {
-                                await db.ProductImage.create(
-                                    {
-                                        ColorID: productColor.ColorID,
-                                        ImageURL: image.ImageURL,
-                                    },
-                                    { transaction }
-                                );
-                            } else {
-                                console.warn(
-                                    "Không có URL ảnh cho màu:",
-                                    colorName
-                                );
-                            }
-                        }
+                    for (const formattedImage of formattedImages) {
+                        await db.ProductImage.create(
+                            {
+                                ColorID: productColor.ColorID,
+                                ImageURL: formattedImage.ImageURL,
+                            },
+                            { transaction }
+                        );
                     }
                 }
             }
@@ -237,7 +253,7 @@ exports.deleteProduct = async (req, res) => {
 
     const transaction = await db.sequelize.transaction();
     try {
-        // Kiểm tra xem sản phẩm có tồn tại không
+        // Kiểm tra xem sản phẩm có tồn t��i không
         const product = await db.Product.findOne({ where: { Slug: slug } });
         if (!product) {
             return res.status(404).json({ error: "Sản phẩm không tồn tại." });

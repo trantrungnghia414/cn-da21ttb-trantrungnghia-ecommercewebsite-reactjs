@@ -116,7 +116,7 @@ function ProductCreate() {
             const newVariants = [...prev.variants];
             newVariants[variantIndex].colors[colorIndex].Images = files.map(
                 (file) => ({
-                    file,
+                    ImageURL: file.name,
                     preview: URL.createObjectURL(file),
                 })
             );
@@ -282,7 +282,7 @@ function ProductCreate() {
                     ColorCode: color.ColorCode,
                     Stock: color.Stock,
                     Images: color.Images.map((image) => ({
-                        ImageURL: image.preview,
+                        ImageURL: image.ImageURL,
                     })),
                 })),
             })),
