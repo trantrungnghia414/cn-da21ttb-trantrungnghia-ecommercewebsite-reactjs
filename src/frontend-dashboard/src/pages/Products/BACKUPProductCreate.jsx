@@ -127,24 +127,12 @@ function ProductCreate() {
     const removeImage = (variantIndex, colorIndex, imageIndex) => {
         setFormData((prev) => {
             const newVariants = [...prev.variants];
-            const newImages = newVariants[variantIndex].colors[
-                colorIndex
-            ].Images.filter((_, idx) => idx !== imageIndex);
-
-            if (
-                imageIndex >= 0 &&
-                imageIndex <
-                    newVariants[variantIndex].colors[colorIndex].Images.length
-            ) {
-                URL.revokeObjectURL(
-                    newVariants[variantIndex].colors[colorIndex].Images[
-                        imageIndex
-                    ].preview
-                );
-            }
-
+            const newImages = [
+                ...newVariants[variantIndex].colors[colorIndex].Images,
+            ];
+            URL.revokeObjectURL(newImages[imageIndex].preview);
+            newImages.splice(imageIndex, 1);
             newVariants[variantIndex].colors[colorIndex].Images = newImages;
-
             return { ...prev, variants: newVariants };
         });
     };
@@ -218,7 +206,6 @@ function ProductCreate() {
             if (!variant.Price) {
                 newErrors[`variant${variantIndex}Price`] = "Vui lòng nhập giá";
             }
-            let hasImage = false;
             variant.colors.forEach((color, colorIndex) => {
                 if (!color.ColorName) {
                     newErrors[
@@ -234,18 +221,7 @@ function ProductCreate() {
                     newErrors[`variant${variantIndex}color${colorIndex}Stock`] =
                         "Vui lòng nhập số lượng";
                 }
-                if (color.Images.length === 0) {
-                    newErrors[
-                        `variant${variantIndex}color${colorIndex}Images`
-                    ] = "Vui lòng thêm ít nhất một ảnh cho màu này";
-                } else {
-                    hasImage = true;
-                }
             });
-            if (!hasImage) {
-                newErrors[`variant${variantIndex}Images`] =
-                    "Vui lòng thêm ít nhất một ảnh cho biến thể này";
-            }
         });
 
         setErrors(newErrors);

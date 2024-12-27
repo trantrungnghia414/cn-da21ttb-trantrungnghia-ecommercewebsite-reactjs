@@ -1,4 +1,3 @@
-// backend/models/productvariant.js
 module.exports = (sequelize, DataTypes) => {
     const ProductVariant = sequelize.define('ProductVariant', {
         VariantID: {
@@ -10,8 +9,8 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
-        MemorySize: {
-            type: DataTypes.STRING,
+        MemorySizeID: {
+            type: DataTypes.INTEGER,
             allowNull: false,
         },
         Price: {
@@ -27,6 +26,10 @@ module.exports = (sequelize, DataTypes) => {
         ProductVariant.belongsTo(models.Product, {
             foreignKey: 'ProductID',
             as: 'product',
+        });
+        ProductVariant.belongsTo(models.MemorySize, {
+            foreignKey: 'MemorySizeID',
+            as: 'memorySize',
         });
         ProductVariant.hasMany(models.ProductColor, {
             foreignKey: 'VariantID',

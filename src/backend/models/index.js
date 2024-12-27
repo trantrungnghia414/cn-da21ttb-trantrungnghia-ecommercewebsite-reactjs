@@ -12,6 +12,7 @@ db.ProductColor = require('./productcolor')(sequelize, Sequelize);
 db.ProductImage = require('./productimage')(sequelize, Sequelize);
 db.ProductVariant = require('./productvariant')(sequelize, Sequelize);
 db.Category = require('./category')(sequelize, Sequelize);
+db.MemorySize = require('./memorysize')(sequelize, Sequelize);
 db.Brand = require('./brand')(sequelize, Sequelize);
 db.Supplier = require('./supplier')(sequelize, Sequelize);
 

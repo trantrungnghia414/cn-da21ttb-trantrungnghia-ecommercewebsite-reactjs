@@ -1,5 +1,4 @@
 const db = require("../models");
-const supplier = require("../models/supplier");
 
 exports.createProduct = async (req, res) => {
     const transaction = await db.sequelize.transaction();
@@ -146,11 +145,6 @@ exports.getProducts = async (req, res) => {
                     attributes: ["Name", "Slug"],
                 },
                 {
-                    model: db.Supplier,
-                    as: "supplier",
-                    attributes: ["Name"],
-                },
-                {
                     model: db.ProductVariant,
                     as: "variants",
                     include: [
@@ -158,13 +152,6 @@ exports.getProducts = async (req, res) => {
                             model: db.ProductColor,
                             as: "colors",
                             attributes: ["ColorName", "ColorCode", "Stock"],
-                            include: [
-                                {
-                                    model: db.ProductImage,
-                                    as: "images",
-                                    attributes: ["ImageURL"],
-                                },
-                            ],
                         },
                     ],
                 },
@@ -174,118 +161,6 @@ exports.getProducts = async (req, res) => {
         res.status(200).json(products);
     } catch (error) {
         console.error("Lỗi khi lấy danh sách sản phẩm:", error);
-        res.status(500).json({ error: error.message });
-    }
-};
-
-exports.getProduct = async (req, res) => {
-    const { slug } = req.params; // Lấy slug từ tham số
-
-    try {
-        const product = await db.Product.findOne({
-            where: { Slug: slug },
-            include: [
-                {
-                    model: db.Category,
-                    as: "category",
-                    attributes: ["Name", "Slug"],
-                },
-                {
-                    model: db.Brand,
-                    as: "brand",
-                    attributes: ["Name", "Slug"],
-                },
-                {
-                    model: db.Supplier,
-                    as: "supplier",
-                    attributes: ["Name"],
-                },
-                {
-                    model: db.ProductVariant,
-                    as: "variants",
-                    include: [
-                        {
-                            model: db.ProductColor,
-                            as: "colors",
-                            attributes: ["ColorName", "ColorCode", "Stock"],
-                            include: [
-                                {
-                                    model: db.ProductImage,
-                                    as: "images",
-                                    attributes: ["ImageURL"],
-                                },
-                            ],
-                        },
-                    ],
-                },
-            ],
-        });
-
-        if (!product) {
-            return res.status(404).json({ error: "Sản phẩm không tồn tại." });
-        }
-
-        res.status(200).json(product); // Trả về thông tin sản phẩm
-    } catch (error) {
-        console.error("Lỗi khi lấy sản phẩm:", error);
-        res.status(500).json({ error: error.message });
-    }
-};
-
-exports.deleteProduct = async (req, res) => {
-    const { slug } = req.params;
-
-    const transaction = await db.sequelize.transaction();
-    try {
-        // Kiểm tra xem sản phẩm có tồn tại không
-        const product = await db.Product.findOne({ where: { Slug: slug } });
-        if (!product) {
-            return res.status(404).json({ error: "Sản phẩm không tồn tại." });
-        }
-
-        // Xóa tất cả hình ảnh liên quan đến sản phẩm
-        await db.ProductImage.destroy({
-            where: { ColorID: db.sequelize.col("ProductColor.ColorID") },
-            include: [
-                {
-                    model: db.ProductColor,
-                    as: "colors",
-                    where: { ProductID: product.ProductID },
-                },
-            ],
-            transaction,
-        });
-
-        // Xóa tất cả màu sắc liên quan đến sản phẩm
-        await db.ProductColor.destroy({
-            where: { VariantID: db.sequelize.col("ProductVariant.VariantID") },
-            include: [
-                {
-                    model: db.ProductVariant,
-                    as: "variants",
-                    where: { ProductID: product.ProductID },
-                },
-            ],
-            transaction,
-        });
-
-        // Xóa tất cả biến thể liên quan đến sản phẩm
-        await db.ProductVariant.destroy({
-            where: { ProductID: product.ProductID },
-            transaction,
-        });
-
-        // Cuối cùng, xóa sản phẩm
-        await db.Product.destroy({
-            where: { Slug: slug },
-            transaction,
-        });
-
-        await transaction.commit();
-        res.status(204).send();
-    } catch (error) {
-        await transaction.rollback();
-        console.error("Lỗi khi xóa sản phẩm:", error);
         res.status(500).json({ error: error.message });
     }
 };

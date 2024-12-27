@@ -17,6 +17,8 @@ import BrandList from '~/pages/Brands/BrandList';
 import BrandForm from '~/pages/Brands/BrandForm';
 import SupplierList from '~/pages/Suppliers/SupplierList';
 import SupplierForm from '~/pages/Suppliers/SupplierForm';
+import MemorySizeList from '~/pages/MemorySize/MemorySizeList';
+import MemorySizeForm from '~/pages/MemorySize/MemorySizeForm';
 
 // Error Page
 const ErrorPage = () => {
@@ -80,6 +82,24 @@ const router = createBrowserRouter([
           {
             path: 'edit/:slug',
             element: <CategoryForm />
+          }
+        ]
+      },
+      // Memory Sizes
+      {
+        path: 'memorysizes',
+        children: [
+          {
+            path: '',
+            element: <MemorySizeList />
+          },
+          {
+            path: 'create',
+            element: <MemorySizeForm />
+          },
+          {
+            path: 'edit/:memorySizeID',
+            element: <MemorySizeForm />
           }
         ]
       },

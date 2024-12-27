@@ -18,6 +18,7 @@ function Sidebar() {
     { name: 'Dashboard', href: '/admin', icon: HomeIcon },
     { name: 'Sản phẩm', href: '/admin/products', icon: CubeIcon },
     { name: 'Danh mục', href: '/admin/categories', icon: TagIcon },
+    { name: 'Kích thước', href: '/admin/memorysizes', icon: CubeIcon },
     { name: 'Thương hiệu', href: '/admin/brands', icon: ShoppingBagIcon },
     { name: 'Nhà cung cấp', href: '/admin/suppliers', icon: TruckIcon },
     { name: 'Đơn hàng', href: '/admin/orders', icon: ShoppingCartIcon },
