@@ -28,7 +28,7 @@ app.use(bodyParser.json()) // middleware to parse incoming data from HTTP reques
 app.use(bodyParser.urlencoded({extended: true})) // Midđleware to parses incoming data from HTTP requests as URL-encoded and converts them into JavaScript objects
 
 // Static files
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 // Routes
 app.use('/api', routes);

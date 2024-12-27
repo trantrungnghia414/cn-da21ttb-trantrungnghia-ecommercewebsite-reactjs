@@ -95,7 +95,7 @@ exports.createProduct = async (req, res) => {
                     .trim() // Xóa khoảng trắng ở đầu và cuối
                     .replace(/\s+/g, "-"); // Thay thế khoảng trắng bằng dấu gạch ngang
 
-                // Trả về tên tệp với số ngẫu nhiên và đuôi tệp chỉ được thêm một lần
+                // Trả về tên tệp với số ngẫu nhiên và đuôi tệp ch�� được thêm một lần
                 return `${baseName}-${randomSuffix}${extension}`; // Thêm số ngẫu nhiên và đuôi tệp
             };
 
@@ -187,7 +187,19 @@ exports.getProducts = async (req, res) => {
             ],
         });
 
-        res.status(200).json(products);
+        // Thêm tiền tố vào tên ảnh
+        const productsWithImagePrefix = products.map((product) => {
+            product.variants.forEach((variant) => {
+                variant.colors.forEach((color) => {
+                    color.images.forEach((image) => {
+                        image.ImageURL = `http://localhost:5000/assets/image/products/${image.ImageURL}`;
+                    });
+                });
+            });
+            return product;
+        });
+
+        res.status(200).json(productsWithImagePrefix);
     } catch (error) {
         console.error("Lỗi khi lấy danh sách sản phẩm:", error);
         res.status(500).json({ error: error.message });
@@ -241,6 +253,15 @@ exports.getProduct = async (req, res) => {
             return res.status(404).json({ error: "Sản phẩm không tồn tại." });
         }
 
+         // Thêm tiền tố vào tên ảnh
+         product.variants.forEach((variant) => {
+            variant.colors.forEach((color) => {
+                color.images.forEach((image) => {
+                    image.ImageURL = `http://localhost:5000/assets/image/products/${image.ImageURL}`;
+                });
+            });
+        });
+
         res.status(200).json(product); // Trả về thông tin sản phẩm
     } catch (error) {
         console.error("Lỗi khi lấy sản phẩm:", error);
@@ -253,7 +274,7 @@ exports.deleteProduct = async (req, res) => {
 
     const transaction = await db.sequelize.transaction();
     try {
-        // Kiểm tra xem sản phẩm có tồn t��i không
+        // Kiểm tra xem sản phẩm có tồn tại không
         const product = await db.Product.findOne({ where: { Slug: slug } });
         if (!product) {
             return res.status(404).json({ error: "Sản phẩm không tồn tại." });
