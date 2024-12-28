@@ -21,16 +21,23 @@ function ProductList() {
     }, []);
 
     const handleDelete = async (slug) => {
-        if (!window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này không?")) return;
-    
+        if (!window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này không?"))
+            return;
+
         try {
-            const response = await axiosAppJson.get(`/products/${slug}`); // Kiểm tra xem sản phẩm có tồn tại không
-            console.log("Sản phẩm tồn tại:", response.data); // Ghi log sản phẩm
-            await axiosAppJson.delete(`/products/${slug}`); // Gọi API để xóa sản phẩm
-            fetchProducts(); // Cập nhật lại danh sách sản phẩm sau khi xóa
+            // Kiểm tra sản phẩm tồn tại
+            await axiosAppJson.get(`/products/${slug}`);
+
+            // Nếu sản phẩm tồn tại, thực hiện xóa
+            await axiosAppJson.delete(`/products/${slug}`);
+
+            // Cập nhật lại danh sách sản phẩm sau khi xóa
+            fetchProducts();
         } catch (error) {
-            // console.error("Lỗi khi xóa sản phẩm:", error);
-            console.error("Lỗi khi xóa sản phẩm:", error.response ? error.response.data : error.message);
+            console.error(
+                "Lỗi khi xóa sản phẩm:",
+                error.response ? error.response.data : error.message
+            );
         }
     };
 
@@ -99,7 +106,12 @@ function ProductList() {
                                                 {product.supplier?.Name}
                                             </td>
                                             <td className="px-3 py-4 text-sm text-gray-500">
-                                                <button>Chi tiết</button>
+                                                <Link
+                                                    to={`/admin/products/detail/${product.Slug}`}
+                                                    className="text-blue-600 hover:text-blue-900"
+                                                >
+                                                    Xem chi tiết
+                                                </Link>
                                             </td>
                                             <td className="whitespace-nowrap px-3 py-4 text-sm">
                                                 <Link

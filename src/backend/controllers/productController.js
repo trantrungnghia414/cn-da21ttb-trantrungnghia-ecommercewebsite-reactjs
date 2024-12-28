@@ -1,5 +1,7 @@
 const db = require("../models");
-const supplier = require("../models/supplier");
+const fs = require("fs/promises");
+const path = require("path");
+const fsSync = require("fs");
 
 exports.createProduct = async (req, res) => {
     const transaction = await db.sequelize.transaction();
@@ -63,7 +65,7 @@ exports.createProduct = async (req, res) => {
             const productVariant = await db.ProductVariant.create(
                 {
                     ProductID: product.ProductID,
-                    MemorySizeID: memorySizeRecord.MemorySizeID, // Sử dụng MemorySizeID
+                    MemorySizeID: memorySizeRecord.MemorySizeID, // S��������������������� dụng MemorySizeID
                     Price: price,
                 },
                 { transaction }
@@ -175,40 +177,47 @@ exports.getProducts = async (req, res) => {
 };
 
 exports.getProduct = async (req, res) => {
-    const { slug } = req.params; // Lấy slug từ tham số
-
     try {
+        const { slug } = req.params;
         const product = await db.Product.findOne({
             where: { Slug: slug },
             include: [
                 {
                     model: db.Category,
                     as: "category",
-                    attributes: ["Name", "Slug"],
                 },
                 {
                     model: db.Brand,
                     as: "brand",
-                    attributes: ["Name", "Slug"],
                 },
                 {
                     model: db.Supplier,
                     as: "supplier",
-                    attributes: ["Name"],
                 },
                 {
                     model: db.ProductVariant,
                     as: "variants",
                     include: [
                         {
+                            model: db.MemorySize,
+                            as: "memorySize",
+                        },
+                        {
                             model: db.ProductColor,
                             as: "colors",
-                            attributes: ["ColorName", "ColorCode", "Stock"],
                             include: [
                                 {
                                     model: db.ProductImage,
                                     as: "images",
-                                    attributes: ["ImageURL"],
+                                    attributes: [
+                                        "ImageID",
+                                        [
+                                            db.sequelize.literal(
+                                                `CONCAT('http://localhost:5000/assets/image/products/', ImageURL)`
+                                            ),
+                                            "ImageURL",
+                                        ],
+                                    ],
                                 },
                             ],
                         },
@@ -218,79 +227,393 @@ exports.getProduct = async (req, res) => {
         });
 
         if (!product) {
-            return res.status(404).json({ error: "Sản phẩm không tồn tại." });
+            return res.status(404).json({ error: "Không tìm thấy sản phẩm" });
         }
 
-        // Thêm tiền tố vào tên ảnh
-        product.variants.forEach((variant) => {
-            variant.colors.forEach((color) => {
-                color.images.forEach((image) => {
-                    image.ImageURL = `http://localhost:5000/assets/image/products/${image.ImageURL}`;
-                });
-            });
-        });
-
-        res.status(200).json(product); // Trả về thông tin sản phẩm
+        res.json(product);
     } catch (error) {
-        console.error("Lỗi khi lấy sản phẩm:", error);
-        res.status(500).json({ error: error.message });
+        console.error("Lỗi khi lấy thông tin sản phẩm:", error);
+        res.status(500).json({ error: "Lỗi server" });
     }
 };
 
 exports.deleteProduct = async (req, res) => {
-    const { slug } = req.params;
-
     const transaction = await db.sequelize.transaction();
     try {
-        // Kiểm tra xem sản phẩm có tồn tại không
-        const product = await db.Product.findOne({ where: { Slug: slug } });
-        if (!product) {
-            return res.status(404).json({ error: "Sản phẩm không tồn tại." });
-        }
+        const { slug } = req.params;
 
-        // Xóa tất cả hình ảnh liên quan đến sản phẩm
-        await db.ProductImage.destroy({
-            where: { ColorID: db.sequelize.col("ProductColor.ColorID") },
-            include: [
-                {
-                    model: db.ProductColor,
-                    as: "colors",
-                    where: { ProductID: product.ProductID },
-                },
-            ],
-            transaction,
-        });
-
-        // Xóa tất cả màu sắc liên quan đến sản phẩm
-        await db.ProductColor.destroy({
-            where: { VariantID: db.sequelize.col("ProductVariant.VariantID") },
+        // Tìm sản phẩm theo slug
+        const product = await db.Product.findOne({
+            where: { Slug: slug },
             include: [
                 {
                     model: db.ProductVariant,
                     as: "variants",
-                    where: { ProductID: product.ProductID },
+                    include: [
+                        {
+                            model: db.ProductColor,
+                            as: "colors",
+                            include: [
+                                {
+                                    model: db.ProductImage,
+                                    as: "images",
+                                },
+                            ],
+                        },
+                    ],
                 },
             ],
-            transaction,
         });
 
-        // Xóa tất cả biến thể liên quan đến sản phẩm
+        if (!product) {
+            return res.status(404).json({ error: "Không tìm thấy sản phẩm" });
+        }
+
+        // Lưu danh sách tên file ảnh cần xóa
+        const imageFiles = [];
+
+        // Thu thập tất cả tên file ảnh
+        product.variants.forEach((variant) => {
+            variant.colors.forEach((color) => {
+                color.images.forEach((image) => {
+                    imageFiles.push(image.ImageURL);
+                });
+            });
+        });
+
+        // Xóa dữ liệu theo thứ tự (từ con đến cha)
+        for (const variant of product.variants) {
+            for (const color of variant.colors) {
+                // Xóa images của color
+                await db.ProductImage.destroy({
+                    where: { ColorID: color.ColorID },
+                    transaction,
+                });
+            }
+            // Xóa colors của variant
+            await db.ProductColor.destroy({
+                where: { VariantID: variant.VariantID },
+                transaction,
+            });
+        }
+
+        // Xóa variants của product
         await db.ProductVariant.destroy({
             where: { ProductID: product.ProductID },
             transaction,
         });
 
-        // Cuối cùng, xóa sản phẩm
+        // Xóa product
         await db.Product.destroy({
-            where: { Slug: slug },
+            where: { ProductID: product.ProductID },
             transaction,
         });
 
+        // Xóa các file ảnh từ thư mục
+        const uploadDir = path.join(__dirname, "../assets/image/products");
+        for (const imageFile of imageFiles) {
+            try {
+                await fs.unlink(path.join(uploadDir, imageFile));
+            } catch (error) {
+                console.error(`Không thể xóa file ${imageFile}:`, error);
+                // Tiếp tục xóa các file khác ngay cả khi một file xóa thất bại
+            }
+        }
+
         await transaction.commit();
-        res.status(204).send();
+        res.status(200).json({ message: "Đã xóa sản phẩm thành công" });
     } catch (error) {
         await transaction.rollback();
         console.error("Lỗi khi xóa sản phẩm:", error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
+exports.updateProduct = async (req, res) => {
+    const transaction = await db.sequelize.transaction();
+    try {
+        const { slug } = req.params;
+        const variants = JSON.parse(req.body.Variants || "[]");
+        const { Name, Description, CategoryID, BrandID, SupplierID } = req.body;
+        const hasNewImages = req.body.hasNewImages === "true";
+        const formattedFileNames = req.formattedFileNames || [];
+        let fileIndex = 0;
+
+        // Tạo slug mới từ tên mới
+        const newSlug = Name.toLowerCase()
+            .normalize("NFD")
+            .replace(/[\u0300-\u036f]/g, "")
+            .replace(/[đĐ]/g, "d")
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-+|-+$/g, "");
+
+        const product = await db.Product.findOne({
+            where: { Slug: slug },
+            include: [
+                {
+                    model: db.ProductVariant,
+                    as: "variants",
+                    include: [
+                        {
+                            model: db.ProductColor,
+                            as: "colors",
+                            include: [{ model: db.ProductImage, as: "images" }],
+                        },
+                    ],
+                },
+            ],
+            transaction,
+        });
+
+        if (!product) {
+            return res.status(404).json({ error: "Không tìm thấy sản phẩm" });
+        }
+
+        // Cập nhật thông tin cơ bản
+        await product.update(
+            {
+                Name,
+                Slug: newSlug,
+                Description,
+                CategoryID,
+                BrandID,
+                SupplierID,
+            },
+            { transaction }
+        );
+
+        // Lấy danh sách variant hiện tại
+        const existingVariants = await db.ProductVariant.findAll({
+            where: { ProductID: product.ProductID },
+            include: [
+                {
+                    model: db.ProductColor,
+                    as: "colors",
+                    include: [{ model: db.ProductImage, as: "images" }],
+                },
+            ],
+            transaction,
+        });
+
+        // Lấy danh sách MemorySizeID mới từ request
+        const newMemorySizeIDs = await Promise.all(
+            variants.map(async (variant) => {
+                const memorySizeRecord = await db.MemorySize.findOne({
+                    where: {
+                        MemorySize: variant.MemorySize,
+                        CategoryID: parseInt(CategoryID, 10),
+                    },
+                    transaction,
+                });
+                return memorySizeRecord.MemorySizeID;
+            })
+        );
+
+        // Xóa những variant không còn trong danh sách mới
+        for (const existingVariant of existingVariants) {
+            if (!newMemorySizeIDs.includes(existingVariant.MemorySizeID)) {
+                // Xóa ảnh và colors của variant này
+                for (const color of existingVariant.colors) {
+                    // Xóa ảnh
+                    for (const image of color.images) {
+                        const imagePath = path.join(uploadDir, image.ImageURL);
+                        try {
+                            if (fsSync.existsSync(imagePath)) {
+                                await fs.unlink(imagePath);
+                            }
+                        } catch (error) {
+                            console.error(
+                                `Không thể xóa file ${imagePath}:`,
+                                error
+                            );
+                        }
+                    }
+
+                    // Xóa records ảnh
+                    await db.ProductImage.destroy({
+                        where: { ColorID: color.ColorID },
+                        transaction,
+                    });
+
+                    // Xóa color
+                    await color.destroy({ transaction });
+                }
+
+                // Xóa variant
+                await existingVariant.destroy({ transaction });
+            }
+        }
+
+        // Tiếp tục xử lý variants mới
+        for (const variant of variants) {
+            const memorySizeRecord = await db.MemorySize.findOne({
+                where: {
+                    MemorySize: variant.MemorySize,
+                    CategoryID: parseInt(CategoryID, 10),
+                },
+                transaction,
+            });
+
+            if (!memorySizeRecord) {
+                throw new Error(
+                    `Không tìm thấy dung lượng: ${variant.MemorySize}`
+                );
+            }
+
+            const [productVariant] = await db.ProductVariant.findOrCreate({
+                where: {
+                    ProductID: product.ProductID,
+                    MemorySizeID: memorySizeRecord.MemorySizeID,
+                },
+                defaults: {
+                    Price: variant.Price,
+                },
+                transaction,
+            });
+
+            await productVariant.update(
+                { Price: variant.Price },
+                { transaction }
+            );
+
+            // Lấy danh sách màu hiện tại của variant
+            const existingColors = await db.ProductColor.findAll({
+                where: { VariantID: productVariant.VariantID },
+                transaction,
+            });
+
+            // Lấy danh sách tên màu mới từ request
+            const newColorNames = variant.colors.map(
+                (color) => color.ColorName
+            );
+
+            // Xóa những màu không còn trong danh sách mới
+            for (const existingColor of existingColors) {
+                if (!newColorNames.includes(existingColor.ColorName)) {
+                    // Xóa ảnh của màu này
+                    const colorImages = await db.ProductImage.findAll({
+                        where: { ColorID: existingColor.ColorID },
+                        transaction,
+                    });
+
+                    // Xóa file ảnh
+                    const uploadDir = path.join(
+                        __dirname,
+                        "../assets/image/products"
+                    );
+                    for (const image of colorImages) {
+                        try {
+                            const imagePath = path.join(
+                                uploadDir,
+                                image.ImageURL
+                            );
+                            if (fsSync.existsSync(imagePath)) {
+                                await fs.unlink(imagePath);
+                            }
+                        } catch (error) {
+                            console.error(
+                                `Không thể xóa file ${imagePath}:`,
+                                error
+                            );
+                        }
+                    }
+
+                    // Xóa records ảnh trong database
+                    await db.ProductImage.destroy({
+                        where: { ColorID: existingColor.ColorID },
+                        transaction,
+                    });
+
+                    // Xóa màu
+                    await existingColor.destroy({ transaction });
+                }
+            }
+
+            // Tiếp tục xử lý thêm/cập nhật màu mới như cũ
+            for (const color of variant.colors) {
+                const [productColor] = await db.ProductColor.findOrCreate({
+                    where: {
+                        VariantID: productVariant.VariantID,
+                        ColorName: color.ColorName,
+                    },
+                    defaults: {
+                        ColorCode: color.ColorCode,
+                        Stock: color.Stock,
+                    },
+                    transaction,
+                });
+
+                await productColor.update(
+                    {
+                        ColorCode: color.ColorCode,
+                        Stock: color.Stock,
+                    },
+                    { transaction }
+                );
+
+                // Kiểm tra xem màu này có ảnh mới không
+                if (hasNewImages && color.Images && color.Images.length > 0) {
+                    // Xóa ảnh cũ
+                    const oldImages = await db.ProductImage.findAll({
+                        where: { ColorID: productColor.ColorID },
+                        transaction,
+                    });
+
+                    const uploadDir = path.join(
+                        __dirname,
+                        "../assets/image/products"
+                    );
+
+                    // Xóa file ảnh cũ
+                    for (const oldImage of oldImages) {
+                        const imagePath = path.join(
+                            uploadDir,
+                            oldImage.ImageURL
+                        );
+                        try {
+                            if (fsSync.existsSync(imagePath)) {
+                                await fs.unlink(imagePath);
+                            }
+                        } catch (error) {
+                            console.error(
+                                `Không thể xóa file ${imagePath}:`,
+                                error
+                            );
+                        }
+                    }
+
+                    // Xóa records ảnh cũ
+                    await db.ProductImage.destroy({
+                        where: { ColorID: productColor.ColorID },
+                        transaction,
+                    });
+
+                    // Thêm ảnh mới cho màu này
+                    const numberOfImages = color.Images.length;
+                    for (let i = 0; i < numberOfImages; i++) {
+                        if (fileIndex < formattedFileNames.length) {
+                            await db.ProductImage.create(
+                                {
+                                    ColorID: productColor.ColorID,
+                                    ImageURL: formattedFileNames[fileIndex],
+                                },
+                                { transaction }
+                            );
+                            fileIndex++;
+                        }
+                    }
+                }
+            }
+        }
+
+        await transaction.commit();
+        res.status(200).json({
+            message: "Cập nhật sản phẩm thành công",
+            slug: newSlug,
+        });
+    } catch (error) {
+        await transaction.rollback();
+        console.error("Lỗi khi cập nhật sản phẩm:", error);
         res.status(500).json({ error: error.message });
     }
 };

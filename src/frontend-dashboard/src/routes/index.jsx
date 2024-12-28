@@ -5,6 +5,7 @@ import DashboardLayout from '../layout/DashboardLayout';
 import Home from '../pages/Dashboard/Home';
 import ProductList from '../pages/Products/ProductList';
 import ProductCreate from '../pages/Products/ProductCreate';
+import ProductDetail from '../pages/Products/ProductDetail';
 import ProductEdit from '../pages/Products/ProductEdit';
 import CategoryList from '../pages/Categories/CategoryList';
 import CategoryForm from '../pages/Categories/CategoryForm';
@@ -64,6 +65,10 @@ const router = createBrowserRouter([
           {
             path: 'edit/:slug',
             element: <ProductEdit />
+          },
+          {
+            path: 'detail/:slug',
+            element: <ProductDetail />
           }
         ]
       },
