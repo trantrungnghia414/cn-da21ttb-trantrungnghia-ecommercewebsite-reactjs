@@ -3,6 +3,9 @@ const fs = require("fs/promises");
 const path = require("path");
 const fsSync = require("fs");
 
+// Thêm định nghĩa uploadDir ở đầu file
+const uploadDir = path.join(__dirname, "../assets/image/products");
+
 exports.createProduct = async (req, res) => {
     const transaction = await db.sequelize.transaction();
     try {
@@ -65,7 +68,7 @@ exports.createProduct = async (req, res) => {
             const productVariant = await db.ProductVariant.create(
                 {
                     ProductID: product.ProductID,
-                    MemorySizeID: memorySizeRecord.MemorySizeID, // S��������������������� dụng MemorySizeID
+                    MemorySizeID: memorySizeRecord.MemorySizeID, // S����������������������� dụng MemorySizeID
                     Price: price,
                 },
                 { transaction }
@@ -335,7 +338,6 @@ exports.updateProduct = async (req, res) => {
         const { slug } = req.params;
         const variants = JSON.parse(req.body.Variants || "[]");
         const { Name, Description, CategoryID, BrandID, SupplierID } = req.body;
-        const hasNewImages = req.body.hasNewImages === "true";
         const formattedFileNames = req.formattedFileNames || [];
         let fileIndex = 0;
 
@@ -389,23 +391,31 @@ exports.updateProduct = async (req, res) => {
                 {
                     model: db.ProductColor,
                     as: "colors",
-                    include: [{ model: db.ProductImage, as: "images" }],
+                    include: [
+                        {
+                            model: db.ProductImage,
+                            as: "images",
+                        },
+                    ],
                 },
             ],
             transaction,
         });
 
         // Lấy danh sách MemorySizeID mới từ request
+        const memorySizeRecords = await db.MemorySize.findAll({
+            where: {
+                CategoryID: parseInt(CategoryID, 10),
+            },
+            transaction,
+        });
+
         const newMemorySizeIDs = await Promise.all(
             variants.map(async (variant) => {
-                const memorySizeRecord = await db.MemorySize.findOne({
-                    where: {
-                        MemorySize: variant.MemorySize,
-                        CategoryID: parseInt(CategoryID, 10),
-                    },
-                    transaction,
-                });
-                return memorySizeRecord.MemorySizeID;
+                const memorySizeRecord = memorySizeRecords.find(
+                    (ms) => ms.MemorySize === variant.MemorySize
+                );
+                return memorySizeRecord ? memorySizeRecord.MemorySizeID : null;
             })
         );
 
@@ -414,7 +424,7 @@ exports.updateProduct = async (req, res) => {
             if (!newMemorySizeIDs.includes(existingVariant.MemorySizeID)) {
                 // Xóa ảnh và colors của variant này
                 for (const color of existingVariant.colors) {
-                    // Xóa ảnh
+                    // Xóa file ảnh
                     for (const image of color.images) {
                         const imagePath = path.join(uploadDir, image.ImageURL);
                         try {
@@ -446,13 +456,9 @@ exports.updateProduct = async (req, res) => {
 
         // Tiếp tục xử lý variants mới
         for (const variant of variants) {
-            const memorySizeRecord = await db.MemorySize.findOne({
-                where: {
-                    MemorySize: variant.MemorySize,
-                    CategoryID: parseInt(CategoryID, 10),
-                },
-                transaction,
-            });
+            const memorySizeRecord = memorySizeRecords.find(
+                (ms) => ms.MemorySize === variant.MemorySize
+            );
 
             if (!memorySizeRecord) {
                 throw new Error(
@@ -529,7 +535,7 @@ exports.updateProduct = async (req, res) => {
                 }
             }
 
-            // Tiếp tục xử lý thêm/cập nhật màu mới như cũ
+            // Tiếp tục xử lý thêm/cập nhật màu mới
             for (const color of variant.colors) {
                 const [productColor] = await db.ProductColor.findOrCreate({
                     where: {
@@ -551,9 +557,9 @@ exports.updateProduct = async (req, res) => {
                     { transaction }
                 );
 
-                // Kiểm tra xem màu này có ảnh mới không
-                if (hasNewImages && color.Images && color.Images.length > 0) {
-                    // Xóa ảnh cũ
+                // Kiểm tra hasNewImages cho từng màu
+                if (color.hasNewImages) {
+                    // Xóa ảnh cũ nếu có
                     const oldImages = await db.ProductImage.findAll({
                         where: { ColorID: productColor.ColorID },
                         transaction,
@@ -589,7 +595,7 @@ exports.updateProduct = async (req, res) => {
                     });
 
                     // Thêm ảnh mới cho màu này
-                    const numberOfImages = color.Images.length;
+                    const numberOfImages = color.newImagesCount || 0;
                     for (let i = 0; i < numberOfImages; i++) {
                         if (fileIndex < formattedFileNames.length) {
                             await db.ProductImage.create(

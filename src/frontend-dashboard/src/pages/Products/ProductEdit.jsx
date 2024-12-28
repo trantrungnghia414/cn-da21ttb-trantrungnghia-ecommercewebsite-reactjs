@@ -45,12 +45,18 @@ function ProductEdit() {
                     SupplierID: product.SupplierID.toString(),
                     variants: product.variants.map((variant) => ({
                         MemorySize: variant.memorySize.MemorySize,
-                        Price: variant.Price.toString(),
+                        Price: variant.Price ? variant.Price.toString() : "0",
                         colors: variant.colors.map((color) => ({
                             ColorName: color.ColorName,
                             ColorCode: color.ColorCode,
                             Stock: color.Stock,
-                            Images: [],
+                            Images: color.images
+                                ? color.images.map((image) => ({
+                                      file: null,
+                                      url: image.ImageURL,
+                                      isExisting: true,
+                                  }))
+                                : [],
                         })),
                     })),
                 });
@@ -127,12 +133,32 @@ function ProductEdit() {
         }
     };
 
+    const validateVariantMemorySize = (memorySize, currentVariantIndex) => {
+        return formData.variants.every((variant, index) => {
+            // Bỏ qua variant hiện tại khi kiểm tra
+            if (index === currentVariantIndex) {
+                return true;
+            }
+            // Kiểm tra xem có trùng với variant khác không
+            return variant.MemorySize !== memorySize;
+        });
+    };
+
     const handleVariantChange = (index, field, value) => {
+        if (field === "MemorySize") {
+            // Kiểm tra xem dung lượng đã tồn tại trong variant khác chưa
+            const isDuplicate = !validateVariantMemorySize(value, index);
+            if (isDuplicate) {
+                toast.error("Dung lượng này đã tồn tại trong biến thể khác!");
+                return;
+            }
+        }
+
         setFormData((prev) => {
             const newVariants = [...prev.variants];
             newVariants[index] = {
                 ...newVariants[index],
-                [field]: value,
+                [field]: field === "Price" ? value.toString() : value,
             };
             return { ...prev, variants: newVariants };
         });
@@ -156,16 +182,28 @@ function ProductEdit() {
 
     const handleImageChange = (variantIndex, colorIndex, e) => {
         const files = Array.from(e.target.files);
+
         setFormData((prev) => {
             const newVariants = [...prev.variants];
             const newColors = [...newVariants[variantIndex].colors];
+
+            // Giữ lại các ảnh cũ có isExisting = true
+            const existingImages =
+                newColors[colorIndex].Images.filter((img) => img.isExisting) ||
+                [];
+
+            // Thêm ảnh mới
+            const newImages = files.map((file) => ({
+                file,
+                url: URL.createObjectURL(file),
+                isExisting: false,
+            }));
+
             newColors[colorIndex] = {
                 ...newColors[colorIndex],
-                Images: files.map((file) => ({
-                    file,
-                    url: URL.createObjectURL(file),
-                })),
+                Images: [...existingImages, ...newImages], // Kết hợp ảnh cũ và mới
             };
+
             newVariants[variantIndex] = {
                 ...newVariants[variantIndex],
                 colors: newColors,
@@ -175,12 +213,27 @@ function ProductEdit() {
     };
 
     const addVariant = () => {
+        // Lấy danh sách dung lượng đã được sử dụng
+        const usedMemorySizes = formData.variants.map(
+            (variant) => variant.MemorySize
+        );
+
+        // Tìm dung lượng đầu tiên chưa được sử dụng
+        const availableMemorySize = filteredMemorySizes.find(
+            (size) => !usedMemorySizes.includes(size.MemorySize)
+        );
+
+        if (!availableMemorySize) {
+            toast.error("Tất cả dung lượng đã được sử dụng!");
+            return;
+        }
+
         setFormData((prev) => ({
             ...prev,
             variants: [
                 ...prev.variants,
                 {
-                    MemorySize: "",
+                    MemorySize: availableMemorySize.MemorySize,
                     Price: "",
                     colors: [
                         {
@@ -222,10 +275,36 @@ function ProductEdit() {
     };
 
     const removeVariant = (index) => {
-        setFormData((prev) => ({
-            ...prev,
-            variants: prev.variants.filter((_, i) => i !== index),
-        }));
+        // Kiểm tra xem variant có tồn tại không
+        if (!formData.variants[index]) return;
+
+        // Lấy thông tin variant sẽ bị xóa
+        const variantToRemove = formData.variants[index];
+
+        setFormData((prev) => {
+            const newVariants = prev.variants.filter((_, i) => i !== index);
+
+            // Nếu không còn variant nào, thêm một variant mới mặc định
+            if (newVariants.length === 0) {
+                const defaultMemorySize = filteredMemorySizes[0]?.MemorySize;
+                if (defaultMemorySize) {
+                    newVariants.push({
+                        MemorySize: defaultMemorySize,
+                        Price: "0",
+                        colors: [
+                            {
+                                ColorName: "",
+                                ColorCode: "",
+                                Stock: "0",
+                                Images: [],
+                            },
+                        ],
+                    });
+                }
+            }
+
+            return { ...prev, variants: newVariants };
+        });
     };
 
     const removeColor = (variantIndex, colorIndex) => {
@@ -240,6 +319,7 @@ function ProductEdit() {
 
     const validateForm = () => {
         const newErrors = {};
+        console.log("Starting form validation");
 
         if (!formData.Name?.trim()) {
             newErrors.Name = "Tên sản phẩm không được để trống";
@@ -253,16 +333,36 @@ function ProductEdit() {
             newErrors.BrandID = "Vui lòng chọn thương hiệu";
         }
 
+        // Kiểm tra chi tiết từng variant
         formData.variants.forEach((variant, variantIndex) => {
-            if (!variant.MemorySize) {
+            console.log(`Validating variant ${variantIndex}:`, variant);
+
+            // Kiểm tra MemorySize có tồn tại trong danh sách đã lọc
+            const isValidMemorySize = filteredMemorySizes.some(
+                (size) => size.MemorySize === variant.MemorySize
+            );
+
+            if (!variant.MemorySize || !isValidMemorySize) {
                 newErrors[`variant${variantIndex}MemorySize`] =
-                    "Vui lòng chọn dung lượng";
-            }
-            if (!variant.Price || isNaN(variant.Price)) {
-                newErrors[`variant${variantIndex}Price`] = "Giá không hợp lệ";
+                    "Vui lòng chọn dung lượng hợp lệ";
             }
 
+            if (
+                !variant.Price ||
+                isNaN(parseFloat(variant.Price)) ||
+                parseFloat(variant.Price) <= 0
+            ) {
+                newErrors[`variant${variantIndex}Price`] =
+                    "Vui lòng nhập giá hợp lệ";
+            }
+
+            // Kiểm tra colors
             variant.colors.forEach((color, colorIndex) => {
+                console.log(
+                    `Validating color ${colorIndex} of variant ${variantIndex}:`,
+                    color
+                );
+
                 if (!color.ColorName?.trim()) {
                     newErrors[`variant${variantIndex}color${colorIndex}Name`] =
                         "Tên màu không được để trống";
@@ -271,20 +371,24 @@ function ProductEdit() {
                     newErrors[`variant${variantIndex}color${colorIndex}Code`] =
                         "Mã màu không được để trống";
                 }
-                if (!color.Stock || isNaN(color.Stock)) {
+                if (
+                    !color.Stock ||
+                    isNaN(parseInt(color.Stock)) ||
+                    parseInt(color.Stock) < 0
+                ) {
                     newErrors[`variant${variantIndex}color${colorIndex}Stock`] =
                         "Số lượng không hợp lệ";
                 }
             });
         });
 
+        console.log("Validation errors:", newErrors);
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         if (!validateForm()) {
             toast.error("Vui lòng kiểm tra lại thông tin!");
             return;
@@ -298,32 +402,63 @@ function ProductEdit() {
             productData.append("BrandID", formData.BrandID);
             productData.append("SupplierID", formData.SupplierID);
 
-            // Lọc bỏ các variant không hợp lệ
-            const validVariants = formData.variants.filter(
-                (variant) =>
-                    variant.MemorySize &&
-                    variant.Price &&
-                    variant.colors.length > 0
-            );
+            // Chuẩn bị dữ liệu variants
+            const variantsData = formData.variants.map((variant) => {
+                return {
+                    MemorySize: variant.MemorySize,
+                    Price: variant.Price,
+                    colors: variant.colors.map((color) => {
+                        const newImages = color.Images.filter(
+                            (img) => !img.isExisting
+                        );
+                        return {
+                            ColorName: color.ColorName,
+                            ColorCode: color.ColorCode,
+                            Stock: color.Stock,
+                            hasNewImages: newImages.length > 0,
+                            newImagesCount: newImages.length,
+                            existingImages: color.Images.filter(
+                                (img) => img.isExisting
+                            ).map((img) => img.url),
+                        };
+                    }),
+                };
+            });
 
-            productData.append("Variants", JSON.stringify(validVariants));
+            productData.append("Variants", JSON.stringify(variantsData));
 
-            // Kiểm tra ảnh mới
-            let hasNewImages = false;
-            validVariants.forEach((variant) => {
-                variant.colors.forEach((color) => {
-                    if (color.Images && color.Images.some((img) => img.file)) {
-                        hasNewImages = true;
-                        color.Images.forEach((image) => {
-                            if (image.file) {
-                                productData.append("images", image.file);
-                            }
-                        });
-                    }
+            // Thêm các file ảnh mới với thông tin về variant và color
+            let imageIndex = 0;
+            formData.variants.forEach((variant, variantIndex) => {
+                variant.colors.forEach((color, colorIndex) => {
+                    const newImages = color.Images.filter(
+                        (img) => !img.isExisting
+                    );
+                    newImages.forEach((image) => {
+                        if (image.file) {
+                            // Thêm metadata cho mỗi ảnh
+                            productData.append(`images`, image.file);
+                            productData.append(
+                                `imageMetadata_${imageIndex}`,
+                                JSON.stringify({
+                                    variantIndex,
+                                    colorIndex,
+                                    fileName: image.file.name,
+                                })
+                            );
+                            imageIndex++;
+                        }
+                    });
                 });
             });
 
-            productData.append("hasNewImages", hasNewImages);
+            // Thêm tổng số ảnh
+            productData.append("totalImages", imageIndex);
+
+            // Log dữ liệu trước khi gửi
+            console.log("Variants data:", variantsData);
+            console.log("Total images:", imageIndex);
+            console.log("Form data entries:", [...productData.entries()]);
 
             const response = await axiosAppJson.put(
                 `/products/${slug}`,
@@ -335,14 +470,16 @@ function ProductEdit() {
                 }
             );
 
+            console.log("Server response:", response.data);
             toast.success("Cập nhật sản phẩm thành công!");
             navigate("/admin/products");
         } catch (error) {
-            console.error("Lỗi khi cập nhật sản phẩm:", error);
-            toast.error(
+            console.error("Error details:", error);
+            console.error("Server error response:", error.response?.data);
+            const errorMessage =
                 error.response?.data?.error ||
-                    "Có lỗi xảy ra khi cập nhật sản phẩm"
-            );
+                "Có lỗi xảy ra khi cập nhật sản phẩm";
+            toast.error(errorMessage);
         }
     };
 
@@ -490,18 +627,17 @@ function ProductEdit() {
                                                     <select
                                                         name="MemorySize"
                                                         value={
-                                                            formData.variants[0]
-                                                                ?.MemorySize ||
+                                                            variant.MemorySize ||
                                                             ""
                                                         }
                                                         onChange={(e) =>
                                                             handleVariantChange(
-                                                                0,
+                                                                variantIndex,
                                                                 "MemorySize",
                                                                 e.target.value
                                                             )
                                                         }
-                                                        className="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                                        className="mt-1 block w-full border rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                                     >
                                                         <option value="">
                                                             Chọn dung lượng

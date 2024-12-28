@@ -76,11 +76,12 @@ function ProductDetail() {
                         </div>
                         <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                             <dt className="text-sm font-medium text-gray-500">
-                                Mô tả
+                                Mô tả và Thông số kỹ thuật
                             </dt>
-                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                                {product.Description}
-                            </dd>
+                            <dd 
+                                className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"
+                                dangerouslySetInnerHTML={{ __html: product.Description }}
+                            />
                         </div>
                     </dl>
                 </div>
@@ -98,10 +99,16 @@ function ProductDetail() {
                         >
                             <div className="px-4 py-4 sm:px-6 bg-gray-50">
                                 <h4 className="mb-2 text-md font-medium text-gray-900">
-                                    Dung lượng: <span style={{ color: 'red' }}>{variant.memorySize?.MemorySize}</span>
+                                    Dung lượng:{" "}
+                                    <span style={{ color: "red" }}>
+                                        {variant.memorySize?.MemorySize}
+                                    </span>
                                 </h4>
                                 <p className="font-semibold">
-                                    Giá: <span style={{ color: 'red' }}>{formatCurrency(product.variants[0]?.Price)}</span>
+                                    Giá:{" "}
+                                    <span style={{ color: "red" }}>
+                                        {formatCurrency(variant.Price)}
+                                    </span>
                                 </p>
                             </div>
                             <div className="px-4 py-5 sm:px-6">
