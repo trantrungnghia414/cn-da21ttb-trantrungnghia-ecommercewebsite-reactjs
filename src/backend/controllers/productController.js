@@ -4,24 +4,22 @@ const supplier = require("../models/supplier");
 exports.createProduct = async (req, res) => {
     const transaction = await db.sequelize.transaction();
     try {
-        const {
-            Name,
-            Slug,
-            Description,
-            CategoryID,
-            BrandID,
-            SupplierID,
-            Variants,
-        } = req.body;
+        // Parse JSON string back to object
+        const variants = JSON.parse(req.body.Variants || "[]");
 
-        console.log(
-            "Dữ liệu nhận được từ frontend:",
-            JSON.stringify(req.body, null, 2)
-        );
+        const { Name, Slug, Description, CategoryID, BrandID, SupplierID } =
+            req.body;
 
-        const categoryID = parseInt(CategoryID, 10);
-        const brandID = parseInt(BrandID, 10);
-        const supplierID = parseInt(SupplierID, 10);
+        // Kiểm tra các tệp ảnh đã được tải lên
+        const uploadedFiles = req.files;
+        const formattedFileNames = req.formattedFileNames || []; // Lấy tên file đã được format từ multer
+
+        console.log("Uploaded files:", uploadedFiles); // Debug log
+        console.log("Formatted file names:", formattedFileNames); // Debug log
+
+        if (!uploadedFiles || uploadedFiles.length === 0) {
+            throw new Error("Không có ảnh nào được tải lên.");
+        }
 
         // Tạo sản phẩm mới
         const product = await db.Product.create(
@@ -29,19 +27,17 @@ exports.createProduct = async (req, res) => {
                 Name,
                 Slug,
                 Description,
-                CategoryID: categoryID,
-                BrandID: brandID,
-                SupplierID: supplierID,
+                CategoryID: parseInt(CategoryID, 10),
+                BrandID: parseInt(BrandID, 10),
+                SupplierID: parseInt(SupplierID, 10),
             },
             { transaction }
         );
 
-        // Kiểm tra sự tồn tại của ProductID
-        if (!product || !product.ProductID) {
-            throw new Error("Không thể tạo sản phẩm, ProductID không tồn tại.");
-        }
+        let fileIndex = 0;
 
-        for (const variant of Variants) {
+        // Xử lý variants và files
+        for (const variant of variants) {
             const memorySize = variant.MemorySize.trim();
             const price = parseFloat(variant.Price);
 
@@ -54,7 +50,10 @@ exports.createProduct = async (req, res) => {
 
             // Tìm MemorySizeID từ bảng memorysizes
             const memorySizeRecord = await db.MemorySize.findOne({
-                where: { MemorySize: memorySize, CategoryID: categoryID },
+                where: {
+                    MemorySize: memorySize,
+                    CategoryID: parseInt(CategoryID, 10),
+                },
             });
 
             if (!memorySizeRecord) {
@@ -78,43 +77,8 @@ exports.createProduct = async (req, res) => {
                 );
             }
 
-            const path = require("path"); // Nhập khẩu module path
-
-            const formatImageName = (name) => {
-                const randomSuffix = Math.floor(Math.random() * 1000000); // Tạo số ngẫu nhiên từ 0 đến 999999
-                const extension = path.extname(name); // Lấy đuôi tệp (ví dụ: .png, .jpg)
-
-                // Lấy tên tệp mà không có đuôi
-                const baseName = path
-                    .basename(name, extension) // Lấy tên tệp mà không có đuôi
-                    .toLowerCase() // Chuyển đổi thành chữ thường
-                    .normalize("NFD") // Chuẩn hóa chuỗi
-                    .replace(/[\u0300-\u036f]/g, "") // Xóa dấu
-                    .replace(/[đĐ]/g, "d") // Thay thế ký tự đặc biệt
-                    .replace(/[^a-z0-9\s]+/g, "") // Thay thế ký tự không hợp lệ bằng khoảng trắng
-                    .trim() // Xóa khoảng trắng ở đầu và cuối
-                    .replace(/\s+/g, "-"); // Thay thế khoảng trắng bằng dấu gạch ngang
-
-                // Trả về tên tệp với số ngẫu nhiên và đuôi tệp ch�� được thêm một lần
-                return `${baseName}-${randomSuffix}${extension}`; // Thêm số ngẫu nhiên và đuôi tệp
-            };
-
             if (variant.colors && variant.colors.length > 0) {
                 for (const color of variant.colors) {
-                    const colorName = color.ColorName.trim();
-                    const colorCode = color.ColorCode.trim();
-                    const stock = parseInt(color.Stock, 10);
-
-                    if (!colorName || !colorCode || isNaN(stock)) {
-                        throw new Error(
-                            "ColorName, ColorCode hoặc Stock không hợp lệ"
-                        );
-                    }
-
-                    const formattedImages = color.Images.map((image) => ({
-                        ImageURL: formatImageName(image.ImageURL),
-                    }));
-
                     const productColor = await db.ProductColor.create(
                         {
                             VariantID: productVariant.VariantID,
@@ -125,14 +89,18 @@ exports.createProduct = async (req, res) => {
                         { transaction }
                     );
 
-                    for (const formattedImage of formattedImages) {
-                        await db.ProductImage.create(
-                            {
-                                ColorID: productColor.ColorID,
-                                ImageURL: formattedImage.ImageURL,
-                            },
-                            { transaction }
-                        );
+                    // Sử dụng tên file đã được format từ multer
+                    for (const image of color.Images) {
+                        if (fileIndex < formattedFileNames.length) {
+                            await db.ProductImage.create(
+                                {
+                                    ColorID: productColor.ColorID,
+                                    ImageURL: formattedFileNames[fileIndex],
+                                },
+                                { transaction }
+                            );
+                            fileIndex++;
+                        }
                     }
                 }
             }
@@ -253,8 +221,8 @@ exports.getProduct = async (req, res) => {
             return res.status(404).json({ error: "Sản phẩm không tồn tại." });
         }
 
-         // Thêm tiền tố vào tên ảnh
-         product.variants.forEach((variant) => {
+        // Thêm tiền tố vào tên ảnh
+        product.variants.forEach((variant) => {
             variant.colors.forEach((color) => {
                 color.images.forEach((image) => {
                     image.ImageURL = `http://localhost:5000/assets/image/products/${image.ImageURL}`;

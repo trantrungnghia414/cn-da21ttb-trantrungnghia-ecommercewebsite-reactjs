@@ -117,6 +117,7 @@ function ProductCreate() {
             newVariants[variantIndex].colors[colorIndex].Images = files.map(
                 (file) => ({
                     ImageURL: file.name,
+                    file: file,
                     preview: URL.createObjectURL(file),
                 })
             );
@@ -258,7 +259,6 @@ function ProductCreate() {
 
         if (!validateForm()) return;
 
-        // Kiểm tra trường Slug trước khi gửi
         if (!formData.Slug) {
             setErrors((prevErrors) => ({
                 ...prevErrors,
@@ -267,29 +267,51 @@ function ProductCreate() {
             return;
         }
 
-        const productData = {
-            Name: formData.Name,
-            Slug: formData.Slug,
-            Description: formData.Description,
-            CategoryID: formData.CategoryID,
-            BrandID: formData.BrandID,
-            SupplierID: formData.SupplierID,
-            Variants: formData.variants.map((variant) => ({
-                MemorySize: variant.MemorySize,
-                Price: variant.Price,
-                colors: variant.colors.map((color) => ({
-                    ColorName: color.ColorName,
-                    ColorCode: color.ColorCode,
-                    Stock: color.Stock,
-                    Images: color.Images.map((image) => ({
-                        ImageURL: image.ImageURL,
-                    })),
+        // Tạo FormData object
+        const productData = new FormData();
+
+        // Thêm các trường dữ liệu cơ bản
+        productData.append("Name", formData.Name);
+        productData.append("Slug", formData.Slug);
+        productData.append("Description", formData.Description);
+        productData.append("CategoryID", formData.CategoryID);
+        productData.append("BrandID", formData.BrandID);
+        productData.append("SupplierID", formData.SupplierID);
+
+        // Chuyển đổi variants thành chuỗi JSON
+        const variantsData = formData.variants.map((variant) => ({
+            MemorySize: variant.MemorySize,
+            Price: variant.Price,
+            colors: variant.colors.map((color) => ({
+                ColorName: color.ColorName,
+                ColorCode: color.ColorCode,
+                Stock: color.Stock,
+                Images: color.Images.map((image) => ({
+                    ImageURL: image.ImageURL,
                 })),
             })),
-        };
+        }));
+
+        // Thêm variants dưới dạng chuỗi JSON
+        productData.append("Variants", JSON.stringify(variantsData));
+
+        // Thêm các file ảnh
+        formData.variants.forEach((variant) => {
+            variant.colors.forEach((color) => {
+                color.Images.forEach((image) => {
+                    if (image.file) {
+                        productData.append("images", image.file);
+                    }
+                });
+            });
+        });
 
         try {
-            const response = await axiosAppJson.post("/products", productData);
+            const response = await axiosAppJson.post("/products", productData, {
+                headers: {
+                    "Content-Type": "multipart/form-data",
+                },
+            });
             console.log("Sản phẩm đã được tạo:", response.data);
             navigate("/admin/products");
         } catch (error) {
