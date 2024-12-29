@@ -14,7 +14,15 @@ function ProductEdit() {
     const [suppliers, setSuppliers] = useState([]);
     const [memorySizes, setMemorySizes] = useState([]);
     const [filteredMemorySizes, setFilteredMemorySizes] = useState([]);
-    const [formData, setFormData] = useState(null);
+    const [formData, setFormData] = useState({
+        Name: "",
+        Slug: "",
+        Description: "",
+        CategoryID: "",
+        BrandID: "",
+        SupplierID: "",
+        variants: [],
+    });
     const [errors, setErrors] = useState({});
     const [selectedCategory, setSelectedCategory] = useState("");
 
@@ -154,11 +162,26 @@ function ProductEdit() {
             }
         }
 
+        // Thêm validation cho trường Price
+        if (field === "Price") {
+            // Loại bỏ các ký tự không phải số
+            const numericValue = value.replace(/[^0-9]/g, "");
+
+            // Giới hạn độ dài tối đa 8 chữ số
+            if (numericValue.length > 8) {
+                toast.error("Giá không được vượt quá 8 chữ số!");
+                return;
+            }
+
+            // Cập nhật giá trị đã được xử lý
+            value = numericValue;
+        }
+
         setFormData((prev) => {
             const newVariants = [...prev.variants];
             newVariants[index] = {
                 ...newVariants[index],
-                [field]: field === "Price" ? value.toString() : value,
+                [field]: value,
             };
             return { ...prev, variants: newVariants };
         });
@@ -319,70 +342,179 @@ function ProductEdit() {
 
     const validateForm = () => {
         const newErrors = {};
-        console.log("Starting form validation");
 
-        if (!formData.Name?.trim()) {
+        // Validate thông tin cơ bản
+        if (!formData.Name) {
             newErrors.Name = "Tên sản phẩm không được để trống";
+            toast.error("Tên sản phẩm không được để trống");
+        } else if (formData.Name.length < 3) {
+            newErrors.Name = "Tên sản phẩm phải có ít nhất 3 ký tự";
+            toast.error("Tên sản phẩm phải có ít nhất 3 ký tự");
         }
 
         if (!formData.CategoryID) {
-            newErrors.CategoryID = "Vui lòng chọn danh mục";
+            newErrors.CategoryID = "Vui lòng chọn danh mục sản phẩm";
+            toast.error("Vui lòng chọn danh mục sản phẩm");
         }
 
         if (!formData.BrandID) {
-            newErrors.BrandID = "Vui lòng chọn thương hiệu";
+            newErrors.BrandID = "Vui lòng chọn thương hiệu sản phẩm";
+            toast.error("Vui lòng chọn thương hiệu sản phẩm");
         }
 
-        // Kiểm tra chi tiết từng variant
+        if (!formData.SupplierID) {
+            newErrors.SupplierID = "Vui lòng chọn nhà cung cấp";
+            toast.error("Vui lòng chọn nhà cung cấp");
+        }
+
+        // Validate variants
         formData.variants.forEach((variant, variantIndex) => {
-            console.log(`Validating variant ${variantIndex}:`, variant);
-
-            // Kiểm tra MemorySize có tồn tại trong danh sách đã lọc
-            const isValidMemorySize = filteredMemorySizes.some(
-                (size) => size.MemorySize === variant.MemorySize
-            );
-
-            if (!variant.MemorySize || !isValidMemorySize) {
+            if (!variant.MemorySize) {
                 newErrors[`variant${variantIndex}MemorySize`] =
-                    "Vui lòng chọn dung lượng hợp lệ";
-            }
-
-            if (
-                !variant.Price ||
-                isNaN(parseFloat(variant.Price)) ||
-                parseFloat(variant.Price) <= 0
-            ) {
-                newErrors[`variant${variantIndex}Price`] =
-                    "Vui lòng nhập giá hợp lệ";
-            }
-
-            // Kiểm tra colors
-            variant.colors.forEach((color, colorIndex) => {
-                console.log(
-                    `Validating color ${colorIndex} of variant ${variantIndex}:`,
-                    color
+                    "Vui lòng chọn dung lượng bộ nhớ";
+                toast.error(
+                    `Biến thể ${
+                        variantIndex + 1
+                    }: Vui lòng chọn dung lượng bộ nhớ`
                 );
+            }
 
-                if (!color.ColorName?.trim()) {
-                    newErrors[`variant${variantIndex}color${colorIndex}Name`] =
-                        "Tên màu không được để trống";
+            if (!variant.Price) {
+                newErrors[`variant${variantIndex}Price`] =
+                    "Vui lòng nhập giá sản phẩm";
+                toast.error(
+                    `Biến thể ${variantIndex + 1}: Vui lòng nhập giá sản phẩm`
+                );
+            } else {
+                const price = parseFloat(variant.Price);
+                if (isNaN(price)) {
+                    newErrors[`variant${variantIndex}Price`] =
+                        "Giá phải là một số";
+                    toast.error(
+                        `Biến thể ${variantIndex + 1}: Giá phải là một số`
+                    );
+                } else if (price <= 0) {
+                    newErrors[`variant${variantIndex}Price`] =
+                        "Giá phải lớn hơn 0";
+                    toast.error(
+                        `Biến thể ${variantIndex + 1}: Giá phải lớn hơn 0`
+                    );
+                } else if (price > 1000000000) {
+                    // 1 tỷ VNĐ
+                    newErrors[`variant${variantIndex}Price`] =
+                        "Giá không được vượt quá 1 tỷ VNĐ";
+                    toast.error(
+                        `Biến thể ${
+                            variantIndex + 1
+                        }: Giá không được vượt quá 1 tỷ VNĐ`
+                    );
                 }
-                if (!color.ColorCode?.trim()) {
-                    newErrors[`variant${variantIndex}color${colorIndex}Code`] =
-                        "Mã màu không được để trống";
+            }
+
+            // Validate colors
+            variant.colors.forEach((color, colorIndex) => {
+                if (!color.ColorName) {
+                    newErrors[
+                        `variant${variantIndex}color${colorIndex}ColorName`
+                    ] = "Vui lòng nhập tên màu";
+                    toast.error(
+                        `Biến thể ${variantIndex + 1}, Màu ${
+                            colorIndex + 1
+                        }: Vui lòng nhập tên màu`
+                    );
+                } else if (color.ColorName.length < 2) {
+                    newErrors[
+                        `variant${variantIndex}color${colorIndex}ColorName`
+                    ] = "Tên màu phải có ít nhất 2 ký tự";
+                    toast.error(
+                        `Biến thể ${variantIndex + 1}, Màu ${
+                            colorIndex + 1
+                        }: Tên màu phải có ít nhất 2 ký tự`
+                    );
                 }
-                if (
-                    !color.Stock ||
-                    isNaN(parseInt(color.Stock)) ||
-                    parseInt(color.Stock) < 0
-                ) {
+
+                if (!color.ColorCode) {
+                    newErrors[
+                        `variant${variantIndex}color${colorIndex}ColorCode`
+                    ] = "Vui lòng chọn mã màu";
+                    toast.error(
+                        `Biến thể ${variantIndex + 1}, Màu ${
+                            colorIndex + 1
+                        }: Vui lòng chọn mã màu`
+                    );
+                }
+
+                if (!color.Stock && color.Stock !== 0) {
                     newErrors[`variant${variantIndex}color${colorIndex}Stock`] =
-                        "Số lượng không hợp lệ";
+                        "Vui lòng nhập số lượng tồn kho";
+                    toast.error(
+                        `Biến thể ${variantIndex + 1}, Màu ${
+                            colorIndex + 1
+                        }: Vui lòng nhập số lượng tồn kho`
+                    );
+                } else {
+                    const stock = parseInt(color.Stock);
+                    if (isNaN(stock)) {
+                        newErrors[
+                            `variant${variantIndex}color${colorIndex}Stock`
+                        ] = "Số lượng phải là một số";
+                        toast.error(
+                            `Biến thể ${variantIndex + 1}, Màu ${
+                                colorIndex + 1
+                            }: Số lượng phải là một số`
+                        );
+                    } else if (stock < 0) {
+                        newErrors[
+                            `variant${variantIndex}color${colorIndex}Stock`
+                        ] = "Số lượng không được âm";
+                        toast.error(
+                            `Biến thể ${variantIndex + 1}, Màu ${
+                                colorIndex + 1
+                            }: Số lượng không được âm`
+                        );
+                    } else if (stock > 1000) {
+                        newErrors[
+                            `variant${variantIndex}color${colorIndex}Stock`
+                        ] = "Số lượng không được vượt quá 1000";
+                        toast.error(
+                            `Biến thể ${variantIndex + 1}, Màu ${
+                                colorIndex + 1
+                            }: Số lượng không được vượt quá 1000`
+                        );
+                    }
+                }
+
+                // Tính toán số lượng ảnh mới và ảnh cũ
+                const existingImages = color.Images.filter(
+                    (img) => img.isExisting
+                ).length;
+                const newImages = color.Images.filter(
+                    (img) => !img.isExisting
+                ).length;
+
+                if (existingImages + newImages === 0) {
+                    newErrors[
+                        `variant${variantIndex}color${colorIndex}Images`
+                    ] = "Vui lòng thêm ít nhất một ảnh cho màu này";
+                    toast.error(
+                        `Biến thể ${variantIndex + 1}, Màu ${
+                            colorIndex + 1
+                        }: Vui lòng thêm ít nhất một ảnh`
+                    );
+                } else if (newImages > 8) {
+                    // Chỉ kiểm tra số lượng ảnh mới
+                    newErrors[
+                        `variant${variantIndex}color${colorIndex}Images`
+                    ] = "Không được thêm quá 8 ảnh mới cho một màu";
+                    toast.error(
+                        `Biến thể ${variantIndex + 1}, Màu ${
+                            colorIndex + 1
+                        }: Không được thêm quá 8 ảnh mới cho một màu`
+                    );
                 }
             });
         });
 
-        console.log("Validation errors:", newErrors);
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };

@@ -111,9 +111,18 @@ function Home() {
               <Link to={`/products/${product.Slug}`} className="block">
                 <div className="aspect-w-1 aspect-h-1 bg-gray-200 p-4">
                   <img
-                    src={`http://localhost:5000/assets/image/products/${product.variants[0]?.colors[0]?.images[0]?.ImageURL}`}
+                    src={
+                      product.Thumbnail
+                        ? `http://localhost:5000/assets/image/products/${product.Thumbnail}`
+                        : product.variants?.[0]?.colors?.[0]?.images?.[0]
+                            ?.ImageURL || 'path/to/default/image.jpg'
+                    }
                     alt={product.Name}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = 'path/to/default/image.jpg';
+                    }}
                   />
                 </div>
                 <div className="p-4">

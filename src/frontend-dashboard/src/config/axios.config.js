@@ -1,13 +1,13 @@
-import axios from 'axios'; 
+import axios from "axios";
 
 const axiosAppJson = axios.create({
     baseURL: process.env.REACT_APP_DOMAIN_SERVER_API,
-    timeout: 10000,
+    timeout: 30000,
     withCredentials: true,
-    headers: { 
-        'Content-Type': 'application/json', 
-        'Accept': 'application/json'
-    }
+    headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+    },
 });
 
 const axiosFromData = axios.create({
@@ -15,10 +15,9 @@ const axiosFromData = axios.create({
     timeout: 10000,
     withCredentials: true,
     headers: {
-        'Content-type': 'multipart/form-data',
-        'Accept': 'application/json'
-    }
+        "Content-type": "multipart/form-data",
+        Accept: "application/json",
+    },
 });
-
 
 export { axiosAppJson, axiosFromData };

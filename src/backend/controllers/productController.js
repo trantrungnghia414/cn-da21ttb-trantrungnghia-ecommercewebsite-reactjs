@@ -68,13 +68,11 @@ exports.createProduct = async (req, res) => {
             const productVariant = await db.ProductVariant.create(
                 {
                     ProductID: product.ProductID,
-                    MemorySizeID: memorySizeRecord.MemorySizeID, // S����������������������� dụng MemorySizeID
+                    MemorySizeID: memorySizeRecord.MemorySizeID,
                     Price: price,
                 },
                 { transaction }
             );
-
-            console.log("VariantID:", productVariant.VariantID);
 
             if (!productVariant || !productVariant.VariantID) {
                 throw new Error(
@@ -112,7 +110,10 @@ exports.createProduct = async (req, res) => {
         }
 
         await transaction.commit();
-        res.status(201).json(product);
+        res.status(201).json({
+            message: "Tạo sản phẩm thành công",
+            slug: product.Slug,
+        });
     } catch (error) {
         await transaction.rollback();
         console.error("Lỗi khi tạo sản phẩm:", error);
