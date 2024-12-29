@@ -1,30 +1,38 @@
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const crypto = require("crypto");
 
 // Tạo thư mục nếu chưa tồn tại
 const uploadDir = path.join(__dirname, "../assets/image/products");
 
+// Hàm tạo chuỗi số ngẫu nhiên 10 chữ số
+const generateRandomNumbers = () => {
+    return Math.floor(1000000000 + Math.random() * 9000000000).toString();
+};
+
 // Hàm format tên file
 const formatImageName = (originalname) => {
-    const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1e9);
     const ext = path.extname(originalname);
-    const baseName = path
-        .basename(originalname, ext)
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[đĐ]/g, "d")
-        .replace(/[^a-z0-9\s]+/g, "")
-        .trim()
-        .replace(/\s+/g, "-");
+    // Tạo hash từ tên gốc + timestamp
+    const hash = crypto
+        .createHash("md5")
+        .update(originalname + Date.now().toString())
+        .digest("hex");
 
-    return `${baseName}-${uniqueSuffix}${ext}`;
+    // Thêm 10 số ngẫu nhiên
+    const randomNumbers = generateRandomNumbers();
+
+    return `${hash}-${randomNumbers}${ext}`;
 };
 
 // Định nghĩa nơi lưu trữ tệp
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
+        // Tạo thư mục nếu chưa tồn tại
+        if (!fs.existsSync(uploadDir)) {
+            fs.mkdirSync(uploadDir, { recursive: true });
+        }
         cb(null, uploadDir);
     },
     filename: (req, file, cb) => {

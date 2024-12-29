@@ -9,18 +9,22 @@ const uploadDir = path.join(__dirname, "../assets/image/products");
 exports.createProduct = async (req, res) => {
     const transaction = await db.sequelize.transaction();
     try {
+        console.log("Request body:", req.body);
+        console.log("Request files:", req.files);
+
         // Parse JSON string back to object
         const variants = JSON.parse(req.body.Variants || "[]");
+        console.log("Parsed variants:", variants);
 
         const { Name, Slug, Description, CategoryID, BrandID, SupplierID } =
             req.body;
 
         // Kiểm tra các tệp ảnh đã được tải lên
         const uploadedFiles = req.files;
-        const formattedFileNames = req.formattedFileNames || []; // Lấy tên file đã được format từ multer
+        const formattedFileNames = req.formattedFileNames || [];
 
-        console.log("Uploaded files:", uploadedFiles); // Debug log
-        console.log("Formatted file names:", formattedFileNames); // Debug log
+        console.log("Uploaded files:", uploadedFiles);
+        console.log("Formatted file names:", formattedFileNames);
 
         if (!uploadedFiles || uploadedFiles.length === 0) {
             throw new Error("Không có ảnh nào được tải lên.");
@@ -74,26 +78,22 @@ exports.createProduct = async (req, res) => {
                 { transaction }
             );
 
-            if (!productVariant || !productVariant.VariantID) {
-                throw new Error(
-                    "Không thể tạo biến thể, VariantID không tồn tại."
-                );
-            }
-
-            if (variant.colors && variant.colors.length > 0) {
+            // Xử lý colors và images
+            if (variant.colors && Array.isArray(variant.colors)) {
                 for (const color of variant.colors) {
                     const productColor = await db.ProductColor.create(
                         {
                             VariantID: productVariant.VariantID,
                             ColorName: color.ColorName,
                             ColorCode: color.ColorCode,
-                            Stock: color.Stock,
+                            Stock: parseInt(color.Stock, 10),
                         },
                         { transaction }
                     );
 
-                    // Sử dụng tên file đã được format từ multer
-                    for (const image of color.Images) {
+                    // Xử lý images cho color này
+                    const numberOfImages = color.newImagesCount || 0;
+                    for (let i = 0; i < numberOfImages; i++) {
                         if (fileIndex < formattedFileNames.length) {
                             await db.ProductImage.create(
                                 {
@@ -111,12 +111,12 @@ exports.createProduct = async (req, res) => {
 
         await transaction.commit();
         res.status(201).json({
-            message: "Tạo sản phẩm thành công",
-            slug: product.Slug,
+            message: "Sản phẩm đã được tạo thành công",
+            product,
         });
     } catch (error) {
         await transaction.rollback();
-        console.error("Lỗi khi tạo sản phẩm:", error);
+        console.error("Chi tiết lỗi:", error);
         res.status(500).json({ error: error.message });
     }
 };

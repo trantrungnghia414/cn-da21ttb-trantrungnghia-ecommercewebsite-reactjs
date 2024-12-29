@@ -375,65 +375,64 @@ function ProductCreate() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        try {
+            // Validate form trước khi submit
+            const errors = validateForm();
+            if (Object.keys(errors).length > 0) {
+                setErrors(errors);
+                return;
+            }
 
-        if (!validateForm()) return;
+            const productData = new FormData();
 
-        if (!formData.Slug) {
-            setErrors((prevErrors) => ({
-                ...prevErrors,
-                Slug: "Slug không thể để trống",
-            }));
-            return;
-        }
+            // Thêm các trường cơ bản
+            productData.append("Name", formData.Name);
+            productData.append("Slug", formData.Slug);
+            productData.append("Description", formData.Description);
+            productData.append("CategoryID", formData.CategoryID);
+            productData.append("BrandID", formData.BrandID);
+            productData.append("SupplierID", formData.SupplierID);
 
-        // Tạo FormData object
-        const productData = new FormData();
-
-        // Thêm các trường dữ liệu cơ bản
-        productData.append("Name", formData.Name);
-        productData.append("Slug", formData.Slug);
-        productData.append("Description", formData.Description);
-        productData.append("CategoryID", formData.CategoryID);
-        productData.append("BrandID", formData.BrandID);
-        productData.append("SupplierID", formData.SupplierID);
-
-        // Chuyển đổi variants thành chuỗi JSON
-        const variantsData = formData.variants.map((variant) => ({
-            MemorySize: variant.MemorySize,
-            Price: variant.Price,
-            colors: variant.colors.map((color) => ({
-                ColorName: color.ColorName,
-                ColorCode: color.ColorCode,
-                Stock: color.Stock,
-                Images: color.Images.map((image) => ({
-                    ImageURL: image.ImageURL,
+            // Chuẩn bị variants data với newImagesCount
+            const variantsData = formData.variants.map((variant) => ({
+                MemorySize: variant.MemorySize,
+                Price: variant.Price,
+                colors: variant.colors.map((color) => ({
+                    ColorName: color.ColorName,
+                    ColorCode: color.ColorCode,
+                    Stock: color.Stock,
+                    newImagesCount: color.Images.length, // Thêm số lượng ảnh mới
                 })),
-            })),
-        }));
+            }));
 
-        // Thêm variants dưới dạng chuỗi JSON
-        productData.append("Variants", JSON.stringify(variantsData));
+            // Thêm variants data
+            productData.append("Variants", JSON.stringify(variantsData));
 
-        // Thêm các file ảnh
-        formData.variants.forEach((variant) => {
-            variant.colors.forEach((color) => {
-                color.Images.forEach((image) => {
-                    if (image.file) {
-                        productData.append("images", image.file);
-                    }
+            // Thêm các file ảnh
+            formData.variants.forEach((variant) => {
+                variant.colors.forEach((color) => {
+                    color.Images.forEach((image) => {
+                        if (image.file) {
+                            productData.append("images", image.file);
+                        }
+                    });
                 });
             });
-        });
 
-        try {
+            // Log dữ liệu trước khi gửi để debug
+            console.log("Form data entries:", [...productData.entries()]);
+            console.log("Variants data:", variantsData);
+
             const response = await axiosFromData.post("/products", productData);
             console.log("Sản phẩm đã được tạo:", response.data);
             toast.success("Tạo sản phẩm thành công!");
             navigate("/admin/products");
         } catch (error) {
             console.error("Lỗi khi tạo sản phẩm:", error);
-            setErrors({ submit: "Có lỗi xảy ra khi tạo sản phẩm" });
-            toast.error("Có lỗi xảy ra khi tạo sản phẩm");
+            const errorMessage =
+                error.response?.data?.error || "Có lỗi xảy ra khi tạo sản phẩm";
+            toast.error(errorMessage);
+            setErrors({ submit: errorMessage });
         }
     };
 

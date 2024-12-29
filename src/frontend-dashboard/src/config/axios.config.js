@@ -12,7 +12,7 @@ const axiosAppJson = axios.create({
 
 const axiosFromData = axios.create({
     baseURL: process.env.REACT_APP_DOMAIN_SERVER_API,
-    timeout: 10000,
+    timeout: 30000,
     withCredentials: true,
     headers: {
         "Content-type": "multipart/form-data",
