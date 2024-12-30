@@ -13,6 +13,7 @@ function ProductCreate() {
         CategoryID: "",
         BrandID: "",
         SupplierID: "",
+        Thumbnail: null,
         variants: [
             {
                 MemorySize: "",
@@ -33,8 +34,9 @@ function ProductCreate() {
     const [suppliers, setSuppliers] = useState([]);
     const [memorySizes, setMemorySizes] = useState([]);
     const [selectedCategory, setSelectedCategory] = useState("");
-    // const [variant, setVariant] = useState({ MemorySize: "" });
     const [errors, setErrors] = useState({});
+    const [thumbnail, setThumbnail] = useState(null);
+    const [thumbnailPreview, setThumbnailPreview] = useState(null);
 
     useEffect(() => {
         const fetchCategoriesAndBrandsAndSuppliers = async () => {
@@ -126,6 +128,27 @@ function ProductCreate() {
             return { ...prev, variants: newVariants };
         });
     };
+
+    const handleThumbnailUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setThumbnail(file);
+            setFormData((prev) => ({
+                ...prev,
+                Thumbnail: file,
+            }));
+            // Tạo URL preview cho thumbnail
+            setThumbnailPreview(URL.createObjectURL(file));
+        }
+    };
+
+    useEffect(() => {
+        return () => {
+            if (thumbnailPreview) {
+                URL.revokeObjectURL(thumbnailPreview);
+            }
+        };
+    }, [thumbnailPreview]);
 
     const removeImage = (variantIndex, colorIndex, imageIndex) => {
         setFormData((prev) => {
@@ -376,16 +399,9 @@ function ProductCreate() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            // Validate form trước khi submit
-            const errors = validateForm();
-            if (Object.keys(errors).length > 0) {
-                setErrors(errors);
-                return;
-            }
+            if (!validateForm()) return;
 
             const productData = new FormData();
-
-            // Thêm các trường cơ bản
             productData.append("Name", formData.Name);
             productData.append("Slug", formData.Slug);
             productData.append("Description", formData.Description);
@@ -393,35 +409,33 @@ function ProductCreate() {
             productData.append("BrandID", formData.BrandID);
             productData.append("SupplierID", formData.SupplierID);
 
-            // Chuẩn bị variants data với newImagesCount
+            // Thêm thumbnail vào formData với key riêng
+            if (thumbnail) {
+                productData.append("thumbnail", thumbnail);
+            }
+
+            // Tạo mảng variants mới không chứa file
             const variantsData = formData.variants.map((variant) => ({
-                MemorySize: variant.MemorySize,
-                Price: variant.Price,
+                ...variant,
                 colors: variant.colors.map((color) => ({
-                    ColorName: color.ColorName,
-                    ColorCode: color.ColorCode,
-                    Stock: color.Stock,
+                    ...color,
                     newImagesCount: color.Images.length, // Thêm số lượng ảnh mới
+                    Images: undefined, // Không gửi mảng Images trong JSON
                 })),
             }));
 
-            // Thêm variants data
             productData.append("Variants", JSON.stringify(variantsData));
 
-            // Thêm các file ảnh
+            // Thêm các file ảnh sản phẩm riêng biệt
             formData.variants.forEach((variant) => {
                 variant.colors.forEach((color) => {
                     color.Images.forEach((image) => {
                         if (image.file) {
-                            productData.append("images", image.file);
+                            productData.append("productImages", image.file);
                         }
                     });
                 });
             });
-
-            // Log dữ liệu trước khi gửi để debug
-            console.log("Form data entries:", [...productData.entries()]);
-            console.log("Variants data:", variantsData);
 
             const response = await axiosFromData.post("/products", productData);
             console.log("Sản phẩm đã được tạo:", response.data);
@@ -578,6 +592,46 @@ function ProductCreate() {
                                     <p className="mt-1 text-sm text-red-500">
                                         {errors.SupplierID}
                                     </p>
+                                )}
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Ảnh Thumbnail
+                                </label>
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleThumbnailUpload}
+                                    className="mt-1 block w-full text-sm text-gray-500
+                                        file:mr-4 file:py-2 file:px-4
+                                        file:rounded-md file:border-0
+                                        file:text-sm file:font-semibold
+                                        file:bg-blue-50 file:text-blue-700
+                                        hover:file:bg-blue-100"
+                                />
+                                {thumbnailPreview && (
+                                    <div className="mt-2 relative w-40 h-40">
+                                        <img
+                                            src={thumbnailPreview}
+                                            alt="Thumbnail preview"
+                                            className="w-full h-full object-cover rounded"
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setThumbnail(null);
+                                                setThumbnailPreview(null);
+                                                setFormData((prev) => ({
+                                                    ...prev,
+                                                    Thumbnail: null,
+                                                }));
+                                            }}
+                                            className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
+                                        >
+                                            ×
+                                        </button>
+                                    </div>
                                 )}
                             </div>
                         </div>

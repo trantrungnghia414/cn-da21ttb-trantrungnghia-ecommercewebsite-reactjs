@@ -9,101 +9,84 @@ const uploadDir = path.join(__dirname, "../assets/image/products");
 exports.createProduct = async (req, res) => {
     const transaction = await db.sequelize.transaction();
     try {
-        console.log("Request body:", req.body);
-        console.log("Request files:", req.files);
-
-        // Parse JSON string back to object
-        const variants = JSON.parse(req.body.Variants || "[]");
-        console.log("Parsed variants:", variants);
-
         const { Name, Slug, Description, CategoryID, BrandID, SupplierID } =
             req.body;
+        const variants = JSON.parse(req.body.Variants || "[]");
 
-        // Kiểm tra các tệp ảnh đã được tải lên
-        const uploadedFiles = req.files;
+        // Kiểm tra files đã upload
+        const thumbnailFile = req.files.thumbnail?.[0];
+        const productImages = req.files.productImages || [];
+
+        // Lấy tên file đã format
         const formattedFileNames = req.formattedFileNames || [];
+        const thumbnailFileName = thumbnailFile ? formattedFileNames[0] : null;
+        // Lấy tên file cho ảnh sản phẩm (bỏ qua file thumbnail)
+        const productImageFileNames = formattedFileNames.slice(1);
 
-        console.log("Uploaded files:", uploadedFiles);
-        console.log("Formatted file names:", formattedFileNames);
-
-        if (!uploadedFiles || uploadedFiles.length === 0) {
-            throw new Error("Không có ảnh nào được tải lên.");
-        }
-
-        // Tạo sản phẩm mới
+        // Tạo sản phẩm với thumbnail
         const product = await db.Product.create(
             {
                 Name,
                 Slug,
                 Description,
-                CategoryID: parseInt(CategoryID, 10),
-                BrandID: parseInt(BrandID, 10),
-                SupplierID: parseInt(SupplierID, 10),
+                CategoryID: parseInt(CategoryID),
+                BrandID: parseInt(BrandID),
+                SupplierID: parseInt(SupplierID),
+                Thumbnail: thumbnailFileName,
             },
             { transaction }
         );
 
+        // Lấy danh sách MemorySize từ database
+        const memorySizes = await db.MemorySize.findAll({
+            transaction,
+        });
+
         let fileIndex = 0;
-
-        // Xử lý variants và files
+        // Xử lý variants và images
         for (const variant of variants) {
-            const memorySize = variant.MemorySize.trim();
-            const price = parseFloat(variant.Price);
-
-            // Kiểm tra tính hợp lệ của MemorySize và Price
-            if (!memorySize || isNaN(price)) {
+            // Tìm MemorySizeID tương ứng
+            const memorySize = memorySizes.find(
+                (ms) => ms.MemorySize === variant.MemorySize
+            );
+            if (!memorySize) {
                 throw new Error(
-                    "MemorySize không hợp lệ hoặc Price không phải là số"
+                    `Không tìm thấy dung lượng bộ nhớ: ${variant.MemorySize}`
                 );
-            }
-
-            // Tìm MemorySizeID từ bảng memorysizes
-            const memorySizeRecord = await db.MemorySize.findOne({
-                where: {
-                    MemorySize: memorySize,
-                    CategoryID: parseInt(CategoryID, 10),
-                },
-            });
-
-            if (!memorySizeRecord) {
-                throw new Error(`Không tìm thấy MemorySize: ${memorySize}`);
             }
 
             const productVariant = await db.ProductVariant.create(
                 {
                     ProductID: product.ProductID,
-                    MemorySizeID: memorySizeRecord.MemorySizeID,
-                    Price: price,
+                    MemorySizeID: memorySize.MemorySizeID, // Sử dụng ID thay vì giá trị string
+                    Price: variant.Price,
                 },
                 { transaction }
             );
 
-            // Xử lý colors và images
-            if (variant.colors && Array.isArray(variant.colors)) {
-                for (const color of variant.colors) {
-                    const productColor = await db.ProductColor.create(
-                        {
-                            VariantID: productVariant.VariantID,
-                            ColorName: color.ColorName,
-                            ColorCode: color.ColorCode,
-                            Stock: parseInt(color.Stock, 10),
-                        },
-                        { transaction }
-                    );
+            for (const color of variant.colors) {
+                const productColor = await db.ProductColor.create(
+                    {
+                        VariantID: productVariant.VariantID,
+                        ColorName: color.ColorName,
+                        ColorCode: color.ColorCode,
+                        Stock: color.Stock,
+                    },
+                    { transaction }
+                );
 
-                    // Xử lý images cho color này
-                    const numberOfImages = color.newImagesCount || 0;
-                    for (let i = 0; i < numberOfImages; i++) {
-                        if (fileIndex < formattedFileNames.length) {
-                            await db.ProductImage.create(
-                                {
-                                    ColorID: productColor.ColorID,
-                                    ImageURL: formattedFileNames[fileIndex],
-                                },
-                                { transaction }
-                            );
-                            fileIndex++;
-                        }
+                // Tạo records cho ảnh sản phẩm
+                const numberOfImages = color.newImagesCount || 0;
+                for (let i = 0; i < numberOfImages; i++) {
+                    if (fileIndex < productImageFileNames.length) {
+                        await db.ProductImage.create(
+                            {
+                                ColorID: productColor.ColorID,
+                                ImageURL: productImageFileNames[fileIndex],
+                            },
+                            { transaction }
+                        );
+                        fileIndex++;
                     }
                 }
             }
@@ -111,12 +94,12 @@ exports.createProduct = async (req, res) => {
 
         await transaction.commit();
         res.status(201).json({
-            message: "Sản phẩm đã được tạo thành công",
-            product,
+            message: "Tạo sản phẩm thành công",
+            slug: Slug,
         });
     } catch (error) {
         await transaction.rollback();
-        console.error("Chi tiết lỗi:", error);
+        console.error("Lỗi khi tạo sản phẩm:", error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -161,8 +144,14 @@ exports.getProducts = async (req, res) => {
             ],
         });
 
-        // Thêm tiền tố vào tên ảnh
+        // Thêm tiền tố vào tên ảnh và thumbnail
         const productsWithImagePrefix = products.map((product) => {
+            // Thêm tiền tố cho thumbnail
+            if (product.Thumbnail) {
+                product.Thumbnail = `http://localhost:5000/assets/image/products/${product.Thumbnail}`;
+            }
+
+            // Thêm tiền tố cho ảnh sản phẩm
             product.variants.forEach((variant) => {
                 variant.colors.forEach((color) => {
                     color.images.forEach((image) => {
@@ -234,6 +223,11 @@ exports.getProduct = async (req, res) => {
             return res.status(404).json({ error: "Không tìm thấy sản phẩm" });
         }
 
+        // Thêm tiền tố cho thumbnail
+        if (product.Thumbnail) {
+            product.Thumbnail = `http://localhost:5000/assets/image/products/${product.Thumbnail}`;
+        }
+
         res.json(product);
     } catch (error) {
         console.error("Lỗi khi lấy thông tin sản phẩm:", error);
@@ -276,7 +270,11 @@ exports.deleteProduct = async (req, res) => {
         // Lưu danh sách tên file ảnh cần xóa
         const imageFiles = [];
 
-        // Thu thập tất cả tên file ảnh
+        // Thu thập tất cả tên file ảnh và thumbnail
+        if (product.Thumbnail) {
+            imageFiles.push(product.Thumbnail);
+        }
+
         product.variants.forEach((variant) => {
             variant.colors.forEach((color) => {
                 color.images.forEach((image) => {
@@ -340,16 +338,18 @@ exports.updateProduct = async (req, res) => {
         const variants = JSON.parse(req.body.Variants || "[]");
         const { Name, Description, CategoryID, BrandID, SupplierID } = req.body;
         const formattedFileNames = req.formattedFileNames || [];
-        let fileIndex = 0;
 
-        // Tạo slug mới từ tên mới
+        // Tạo slug mới từ tên sản phẩm
         const newSlug = Name.toLowerCase()
-            .normalize("NFD")
-            .replace(/[\u0300-\u036f]/g, "")
-            .replace(/[đĐ]/g, "d")
-            .replace(/[^a-z0-9]+/g, "-")
-            .replace(/^-+|-+$/g, "");
+            .replace(/ /g, "-")
+            .replace(/[^\w-]+/g, "");
 
+        // Kiểm tra có thumbnail mới không
+        const thumbnailFile = req.files?.thumbnail?.[0];
+        let thumbnailFileName = null;
+        let productImageStartIndex = 0;
+
+        // Tìm sản phẩm hiện tại
         const product = await db.Product.findOne({
             where: { Slug: slug },
             include: [
@@ -365,43 +365,75 @@ exports.updateProduct = async (req, res) => {
                     ],
                 },
             ],
-            transaction,
         });
 
         if (!product) {
             return res.status(404).json({ error: "Không tìm thấy sản phẩm" });
         }
 
-        // Cập nhật thông tin cơ bản
+        // Xóa thumbnail cũ nếu có
+        if (product.Thumbnail) {
+            const oldThumbnailPath = path.join(
+                __dirname,
+                "../assets/image/products",
+                product.Thumbnail
+            );
+            try {
+                if (fsSync.existsSync(oldThumbnailPath)) {
+                    await fs.unlink(oldThumbnailPath);
+                }
+            } catch (error) {
+                console.error("Lỗi khi xóa thumbnail cũ:", error);
+            }
+        }
+
+        // Lấy tên file thumbnail từ files.thumbnail
+        if (thumbnailFile) {
+            thumbnailFileName = req.files.thumbnail[0].filename;
+        }
+
+        // Cập nhật thông tin sản phẩm
         await product.update(
             {
                 Name,
                 Slug: newSlug,
                 Description,
-                CategoryID,
-                BrandID,
-                SupplierID,
+                CategoryID: parseInt(CategoryID),
+                BrandID: parseInt(BrandID),
+                SupplierID: parseInt(SupplierID),
+                Thumbnail: thumbnailFileName || product.Thumbnail, // Giữ thumbnail cũ nếu không có file mới
             },
             { transaction }
         );
 
-        // Lấy danh sách variant hiện tại
-        const existingVariants = await db.ProductVariant.findAll({
-            where: { ProductID: product.ProductID },
-            include: [
-                {
-                    model: db.ProductColor,
-                    as: "colors",
-                    include: [
-                        {
-                            model: db.ProductImage,
-                            as: "images",
-                        },
-                    ],
-                },
-            ],
-            transaction,
-        });
+        // Xử lý ảnh sản phẩm - Tổ chức lại theo màu
+        const productImages = req.files?.images || [];
+        let currentImageIndex = 0;
+        const imagesByColor = new Map(); // Lưu trữ ảnh theo màu
+
+        // Phân loại ảnh theo màu dựa vào thứ tự trong variants
+        for (const variant of variants) {
+            for (const color of variant.colors) {
+                if (color.hasNewImages) {
+                    const numberOfImages = color.newImagesCount || 0;
+                    const imagesForThisColor = [];
+
+                    for (let i = 0; i < numberOfImages; i++) {
+                        if (currentImageIndex < productImages.length) {
+                            imagesForThisColor.push(
+                                productImages[currentImageIndex].filename
+                            );
+                            currentImageIndex++;
+                        }
+                    }
+
+                    imagesByColor.set(
+                        `${variant.MemorySize}-${color.ColorName}`,
+                        imagesForThisColor
+                    );
+                }
+            }
+        }
 
         // Lấy danh sách MemorySizeID mới từ request
         const memorySizeRecords = await db.MemorySize.findAll({
@@ -421,7 +453,7 @@ exports.updateProduct = async (req, res) => {
         );
 
         // Xóa những variant không còn trong danh sách mới
-        for (const existingVariant of existingVariants) {
+        for (const existingVariant of product.variants) {
             if (!newMemorySizeIDs.includes(existingVariant.MemorySizeID)) {
                 // Xóa ảnh và colors của variant này
                 for (const color of existingVariant.colors) {
@@ -560,21 +592,17 @@ exports.updateProduct = async (req, res) => {
 
                 // Kiểm tra hasNewImages cho từng màu
                 if (color.hasNewImages) {
-                    // Xóa ảnh cũ nếu có
+                    // Xóa ảnh cũ
                     const oldImages = await db.ProductImage.findAll({
                         where: { ColorID: productColor.ColorID },
                         transaction,
                     });
 
-                    const uploadDir = path.join(
-                        __dirname,
-                        "../assets/image/products"
-                    );
-
                     // Xóa file ảnh cũ
                     for (const oldImage of oldImages) {
                         const imagePath = path.join(
-                            uploadDir,
+                            __dirname,
+                            "../assets/image/products",
                             oldImage.ImageURL
                         );
                         try {
@@ -595,19 +623,19 @@ exports.updateProduct = async (req, res) => {
                         transaction,
                     });
 
-                    // Thêm ảnh mới cho màu này
-                    const numberOfImages = color.newImagesCount || 0;
-                    for (let i = 0; i < numberOfImages; i++) {
-                        if (fileIndex < formattedFileNames.length) {
-                            await db.ProductImage.create(
-                                {
-                                    ColorID: productColor.ColorID,
-                                    ImageURL: formattedFileNames[fileIndex],
-                                },
-                                { transaction }
-                            );
-                            fileIndex++;
-                        }
+                    // Lấy ảnh mới cho màu này
+                    const colorKey = `${variant.MemorySize}-${color.ColorName}`;
+                    const newImages = imagesByColor.get(colorKey) || [];
+
+                    // Thêm ảnh mới
+                    for (const imageFileName of newImages) {
+                        await db.ProductImage.create(
+                            {
+                                ColorID: productColor.ColorID,
+                                ImageURL: imageFileName,
+                            },
+                            { transaction }
+                        );
                     }
                 }
             }

@@ -3,6 +3,7 @@ import { useParams, useNavigate, Link } from "react-router-dom";
 import { axiosAppJson } from "~/config/axios.config";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { axiosFromData } from "~/config/axios.config";
 
 function ProductEdit() {
     const { slug } = useParams();
@@ -21,10 +22,12 @@ function ProductEdit() {
         CategoryID: "",
         BrandID: "",
         SupplierID: "",
+        Thumbnail: "",
         variants: [],
     });
     const [errors, setErrors] = useState({});
     const [selectedCategory, setSelectedCategory] = useState("");
+    const [thumbnailPreview, setThumbnailPreview] = useState(null);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -51,6 +54,7 @@ function ProductEdit() {
                     CategoryID: product.CategoryID.toString(),
                     BrandID: product.BrandID.toString(),
                     SupplierID: product.SupplierID.toString(),
+                    Thumbnail: product.Thumbnail,
                     variants: product.variants.map((variant) => ({
                         MemorySize: variant.memorySize.MemorySize,
                         Price: variant.Price ? variant.Price.toString() : "0",
@@ -69,13 +73,16 @@ function ProductEdit() {
                     })),
                 });
 
+                if (product.Thumbnail) {
+                    setThumbnailPreview(product.Thumbnail);
+                }
+
                 setCategories(categoriesResponse.data);
                 setBrands(brandsResponse.data);
                 setSuppliers(suppliersResponse.data);
                 setMemorySizes(memorySizesResponse.data);
                 setSelectedCategory(product.CategoryID.toString());
 
-                // Lọc dung lượng theo danh mục ban đầu
                 const filteredSizes = memorySizesResponse.data.filter(
                     (size) =>
                         size.CategoryID.toString() ===
@@ -101,7 +108,6 @@ function ProductEdit() {
             CategoryID: categoryId,
         }));
 
-        // Lọc dung lượng ngay khi thay đổi danh mục
         const filteredSizes = memorySizes.filter(
             (size) => size.CategoryID.toString() === categoryId
         );
@@ -119,9 +125,7 @@ function ProductEdit() {
             fetchMemorySizes(value);
         }
 
-        // Khi danh mục thay đổi, cập nhật dung lượng tương ứng
         if (name === "CategoryID") {
-            // Cập nhật dung lượng đã lọc theo danh mục mới
             const filteredSizes = memorySizes.filter(
                 (size) => size.CategoryID === value
             );
@@ -143,18 +147,15 @@ function ProductEdit() {
 
     const validateVariantMemorySize = (memorySize, currentVariantIndex) => {
         return formData.variants.every((variant, index) => {
-            // Bỏ qua variant hiện tại khi kiểm tra
             if (index === currentVariantIndex) {
                 return true;
             }
-            // Kiểm tra xem có trùng với variant khác không
             return variant.MemorySize !== memorySize;
         });
     };
 
     const handleVariantChange = (index, field, value) => {
         if (field === "MemorySize") {
-            // Kiểm tra xem dung lượng đã tồn tại trong variant khác chưa
             const isDuplicate = !validateVariantMemorySize(value, index);
             if (isDuplicate) {
                 toast.error("Dung lượng này đã tồn tại trong biến thể khác!");
@@ -162,18 +163,14 @@ function ProductEdit() {
             }
         }
 
-        // Thêm validation cho trường Price
         if (field === "Price") {
-            // Loại bỏ các ký tự không phải số
             const numericValue = value.replace(/[^0-9]/g, "");
 
-            // Giới hạn độ dài tối đa 8 chữ số
             if (numericValue.length > 8) {
                 toast.error("Giá không được vượt quá 8 chữ số!");
                 return;
             }
 
-            // Cập nhật giá trị đã được xử lý
             value = numericValue;
         }
 
@@ -210,12 +207,10 @@ function ProductEdit() {
             const newVariants = [...prev.variants];
             const newColors = [...newVariants[variantIndex].colors];
 
-            // Giữ lại các ảnh cũ có isExisting = true
             const existingImages =
                 newColors[colorIndex].Images.filter((img) => img.isExisting) ||
                 [];
 
-            // Thêm ảnh mới
             const newImages = files.map((file) => ({
                 file,
                 url: URL.createObjectURL(file),
@@ -224,7 +219,7 @@ function ProductEdit() {
 
             newColors[colorIndex] = {
                 ...newColors[colorIndex],
-                Images: [...existingImages, ...newImages], // Kết hợp ảnh cũ và mới
+                Images: [...existingImages, ...newImages],
             };
 
             newVariants[variantIndex] = {
@@ -236,12 +231,10 @@ function ProductEdit() {
     };
 
     const addVariant = () => {
-        // Lấy danh sách dung lượng đã được sử dụng
         const usedMemorySizes = formData.variants.map(
             (variant) => variant.MemorySize
         );
 
-        // Tìm dung lượng đầu tiên chưa được sử dụng
         const availableMemorySize = filteredMemorySizes.find(
             (size) => !usedMemorySizes.includes(size.MemorySize)
         );
@@ -276,7 +269,6 @@ function ProductEdit() {
             const newVariants = [...prev.variants];
             const newColors = [...newVariants[variantIndex].colors];
 
-            // Thêm một màu mới
             newColors.push({
                 ColorName: "",
                 ColorCode: "",
@@ -284,7 +276,6 @@ function ProductEdit() {
                 Images: [],
             });
 
-            // Cập nhật variant với màu mới
             newVariants[variantIndex] = {
                 ...newVariants[variantIndex],
                 colors: newColors,
@@ -298,16 +289,13 @@ function ProductEdit() {
     };
 
     const removeVariant = (index) => {
-        // Kiểm tra xem variant có tồn tại không
         if (!formData.variants[index]) return;
 
-        // Lấy thông tin variant sẽ bị xóa
         const variantToRemove = formData.variants[index];
 
         setFormData((prev) => {
             const newVariants = prev.variants.filter((_, i) => i !== index);
 
-            // Nếu không còn variant nào, thêm một variant mới mặc định
             if (newVariants.length === 0) {
                 const defaultMemorySize = filteredMemorySizes[0]?.MemorySize;
                 if (defaultMemorySize) {
@@ -343,7 +331,6 @@ function ProductEdit() {
     const validateForm = () => {
         const newErrors = {};
 
-        // Validate thông tin cơ bản
         if (!formData.Name) {
             newErrors.Name = "Tên sản phẩm không được để trống";
             toast.error("Tên sản phẩm không được để trống");
@@ -367,7 +354,6 @@ function ProductEdit() {
             toast.error("Vui lòng chọn nhà cung cấp");
         }
 
-        // Validate variants
         formData.variants.forEach((variant, variantIndex) => {
             if (!variant.MemorySize) {
                 newErrors[`variant${variantIndex}MemorySize`] =
@@ -400,7 +386,6 @@ function ProductEdit() {
                         `Biến thể ${variantIndex + 1}: Giá phải lớn hơn 0`
                     );
                 } else if (price > 1000000000) {
-                    // 1 tỷ VNĐ
                     newErrors[`variant${variantIndex}Price`] =
                         "Giá không được vượt quá 1 tỷ VNĐ";
                     toast.error(
@@ -411,7 +396,6 @@ function ProductEdit() {
                 }
             }
 
-            // Validate colors
             variant.colors.forEach((color, colorIndex) => {
                 if (!color.ColorName) {
                     newErrors[
@@ -484,7 +468,6 @@ function ProductEdit() {
                     }
                 }
 
-                // Tính toán số lượng ảnh mới và ảnh cũ
                 const existingImages = color.Images.filter(
                     (img) => img.isExisting
                 ).length;
@@ -502,7 +485,6 @@ function ProductEdit() {
                         }: Vui lòng thêm ít nhất một ảnh`
                     );
                 } else if (newImages > 8) {
-                    // Chỉ kiểm tra số lượng ảnh mới
                     newErrors[
                         `variant${variantIndex}color${colorIndex}Images`
                     ] = "Không được thêm quá 8 ảnh mới cho một màu";
@@ -519,6 +501,25 @@ function ProductEdit() {
         return Object.keys(newErrors).length === 0;
     };
 
+    const handleThumbnailUpload = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setFormData((prev) => ({
+                ...prev,
+                Thumbnail: file,
+            }));
+            setThumbnailPreview(URL.createObjectURL(file));
+        }
+    };
+
+    useEffect(() => {
+        return () => {
+            if (thumbnailPreview && !thumbnailPreview.includes("http")) {
+                URL.revokeObjectURL(thumbnailPreview);
+            }
+        };
+    }, [thumbnailPreview]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateForm()) {
@@ -534,7 +535,6 @@ function ProductEdit() {
             productData.append("BrandID", formData.BrandID);
             productData.append("SupplierID", formData.SupplierID);
 
-            // Chuẩn bị dữ liệu variants
             const variantsData = formData.variants.map((variant) => {
                 return {
                     MemorySize: variant.MemorySize,
@@ -559,7 +559,6 @@ function ProductEdit() {
 
             productData.append("Variants", JSON.stringify(variantsData));
 
-            // Thêm các file ảnh mới với thông tin về variant và color
             let imageIndex = 0;
             formData.variants.forEach((variant, variantIndex) => {
                 variant.colors.forEach((color, colorIndex) => {
@@ -568,7 +567,6 @@ function ProductEdit() {
                     );
                     newImages.forEach((image) => {
                         if (image.file) {
-                            // Thêm metadata cho mỗi ảnh
                             productData.append(`images`, image.file);
                             productData.append(
                                 `imageMetadata_${imageIndex}`,
@@ -584,22 +582,19 @@ function ProductEdit() {
                 });
             });
 
-            // Thêm tổng số ảnh
             productData.append("totalImages", imageIndex);
 
-            // Log dữ liệu trước khi gửi
+            if (formData.Thumbnail instanceof File) {
+                productData.append("thumbnail", formData.Thumbnail);
+            }
+
             console.log("Variants data:", variantsData);
             console.log("Total images:", imageIndex);
             console.log("Form data entries:", [...productData.entries()]);
 
-            const response = await axiosAppJson.put(
+            const response = await axiosFromData.put(
                 `/products/${slug}`,
-                productData,
-                {
-                    headers: {
-                        "Content-Type": "multipart/form-data",
-                    },
-                }
+                productData
             );
 
             console.log("Server response:", response.data);
@@ -624,9 +619,8 @@ function ProductEdit() {
             <form onSubmit={handleSubmit}>
                 <div className="shadow sm:rounded-md sm:overflow-hidden">
                     <div className="px-4 py-5 bg-white space-y-6 sm:p-6">
-                        {/* Basic Information */}
-                        <div className="grid grid-cols-6 gap-6">
-                            <div className="col-span-6 sm:col-span-3">
+                        <div className="grid grid-cols-1 gap-6">
+                            <div>
                                 <label className="block text-sm font-medium text-gray-700">
                                     Tên sản phẩm
                                 </label>
@@ -644,7 +638,7 @@ function ProductEdit() {
                                 )}
                             </div>
 
-                            <div className="col-span-6">
+                            <div>
                                 <label className="block text-sm font-medium text-gray-700">
                                     Mô tả
                                 </label>
@@ -657,7 +651,7 @@ function ProductEdit() {
                                 />
                             </div>
 
-                            <div className="col-span-6 sm:col-span-3">
+                            <div>
                                 <label className="block text-sm font-medium text-gray-700">
                                     Danh mục
                                 </label>
@@ -684,7 +678,7 @@ function ProductEdit() {
                                 )}
                             </div>
 
-                            <div className="col-span-6 sm:col-span-3">
+                            <div>
                                 <label className="block text-sm font-medium text-gray-700">
                                     Thương hiệu
                                 </label>
@@ -711,7 +705,7 @@ function ProductEdit() {
                                 )}
                             </div>
 
-                            <div className="col-span-6 sm:col-span-3">
+                            <div>
                                 <label className="block text-sm font-medium text-gray-700">
                                     Nhà cung cấp
                                 </label>
@@ -737,9 +731,47 @@ function ProductEdit() {
                                     </p>
                                 )}
                             </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">
+                                    Ảnh thumbnail
+                                </label>
+                                <div className="mt-1 flex items-center">
+                                    <span className="inline-block h-32 w-32 rounded-lg overflow-hidden bg-gray-100">
+                                        {thumbnailPreview ? (
+                                            <img
+                                                src={thumbnailPreview}
+                                                alt="Thumbnail preview"
+                                                className="h-full w-full object-cover"
+                                            />
+                                        ) : (
+                                            <svg
+                                                className="h-full w-full text-gray-300"
+                                                fill="currentColor"
+                                                viewBox="0 0 24 24"
+                                            >
+                                                <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
+                                            </svg>
+                                        )}
+                                    </span>
+                                    <label
+                                        htmlFor="thumbnail-upload"
+                                        className="ml-5 bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
+                                    >
+                                        Thay đổi
+                                    </label>
+                                    <input
+                                        id="thumbnail-upload"
+                                        name="thumbnail"
+                                        type="file"
+                                        accept="image/*"
+                                        className="sr-only"
+                                        onChange={handleThumbnailUpload}
+                                    />
+                                </div>
+                            </div>
                         </div>
 
-                        {/* Variants Section */}
                         <div className="mt-6">
                             <h3 className="text-lg font-medium text-gray-900">
                                 Biến thể sản phẩm
@@ -823,7 +855,6 @@ function ProductEdit() {
                                                 </div>
                                             </div>
 
-                                            {/* Colors Section */}
                                             <div className="mt-6">
                                                 <h4 className="text-sm font-medium text-gray-900">
                                                     Màu sắc
@@ -917,7 +948,6 @@ function ProductEdit() {
                                                                     </div>
                                                                 </div>
 
-                                                                {/* Image Upload */}
                                                                 <div className="mt-6">
                                                                     <label className="block text-sm font-medium text-gray-700">
                                                                         Hình ảnh
@@ -944,7 +974,6 @@ function ProductEdit() {
                                                                     />
                                                                 </div>
 
-                                                                {/* Preview Images */}
                                                                 <div className="mt-4 grid grid-cols-8 gap-4">
                                                                     {color.Images?.map(
                                                                         (
