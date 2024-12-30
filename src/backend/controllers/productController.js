@@ -347,7 +347,6 @@ exports.updateProduct = async (req, res) => {
         // Kiểm tra có thumbnail mới không
         const thumbnailFile = req.files?.thumbnail?.[0];
         let thumbnailFileName = null;
-        let productImageStartIndex = 0;
 
         // Tìm sản phẩm hiện tại
         const product = await db.Product.findOne({
@@ -371,25 +370,24 @@ exports.updateProduct = async (req, res) => {
             return res.status(404).json({ error: "Không tìm thấy sản phẩm" });
         }
 
-        // Xóa thumbnail cũ nếu có
-        if (product.Thumbnail) {
-            const oldThumbnailPath = path.join(
-                __dirname,
-                "../assets/image/products",
-                product.Thumbnail
-            );
-            try {
-                if (fsSync.existsSync(oldThumbnailPath)) {
-                    await fs.unlink(oldThumbnailPath);
-                }
-            } catch (error) {
-                console.error("Lỗi khi xóa thumbnail cũ:", error);
-            }
-        }
-
-        // Lấy tên file thumbnail từ files.thumbnail
+        // Chỉ xử lý thumbnail nếu có file mới
         if (thumbnailFile) {
-            thumbnailFileName = req.files.thumbnail[0].filename;
+            // Xóa thumbnail cũ nếu có
+            if (product.Thumbnail) {
+                const oldThumbnailPath = path.join(
+                    __dirname,
+                    "../assets/image/products",
+                    product.Thumbnail
+                );
+                try {
+                    if (fsSync.existsSync(oldThumbnailPath)) {
+                        await fs.unlink(oldThumbnailPath);
+                    }
+                } catch (error) {
+                    console.error("Lỗi khi xóa thumbnail cũ:", error);
+                }
+            }
+            thumbnailFileName = thumbnailFile.filename;
         }
 
         // Cập nhật thông tin sản phẩm

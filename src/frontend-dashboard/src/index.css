@@ -1,3 +1,13 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Tùy chỉnh style cho CKEditor */
+.ck-editor__editable {
+    min-height: 300px !important;
+    max-height: 500px;
+}
+
+.ck-editor__editable_inline {
+    padding: 0 1rem !important;
+}

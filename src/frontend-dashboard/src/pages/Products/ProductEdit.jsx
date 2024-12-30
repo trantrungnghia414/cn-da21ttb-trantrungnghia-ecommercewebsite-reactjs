@@ -4,6 +4,8 @@ import { axiosAppJson } from "~/config/axios.config";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { axiosFromData } from "~/config/axios.config";
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 function ProductEdit() {
     const { slug } = useParams();
@@ -610,6 +612,14 @@ function ProductEdit() {
         }
     };
 
+    const handleEditorChange = (event, editor) => {
+        const data = editor.getData();
+        setFormData(prev => ({
+            ...prev,
+            Description: data
+        }));
+    };
+
     if (loading) return <div>Đang tải...</div>;
     if (error) return <div>{error}</div>;
     if (!formData) return <div>Không tìm thấy sản phẩm</div>;
@@ -642,13 +652,36 @@ function ProductEdit() {
                                 <label className="block text-sm font-medium text-gray-700">
                                     Mô tả
                                 </label>
-                                <textarea
-                                    name="Description"
-                                    rows={3}
-                                    value={formData.Description}
-                                    onChange={handleChange}
-                                    className="border-[1px] py-2 px-4 mt-1 focus:ring-blue-500 focus:border-blue-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md"
-                                />
+                                <div className="mt-1">
+                                    <CKEditor
+                                        editor={ClassicEditor}
+                                        data={formData.Description}
+                                        onChange={handleEditorChange}
+                                        config={{
+                                            toolbar: [
+                                                'heading',
+                                                '|',
+                                                'bold',
+                                                'italic',
+                                                'link',
+                                                'bulletedList',
+                                                'numberedList',
+                                                '|',
+                                                'outdent',
+                                                'indent',
+                                                '|',
+                                                'blockQuote',
+                                                'insertTable',
+                                                'undo',
+                                                'redo'
+                                            ],
+                                            language: 'vi',
+                                            table: {
+                                                contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
+                                            }
+                                        }}
+                                    />
+                                </div>
                             </div>
 
                             <div>

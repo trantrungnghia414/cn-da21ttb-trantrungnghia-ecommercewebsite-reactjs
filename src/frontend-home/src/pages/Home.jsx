@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { axiosClient } from '../config/axios.config';
+import { formatCurrency } from '~/utils/format';
 
 const PRODUCTS_PER_PAGE = 12;
 
@@ -49,8 +50,19 @@ function Home() {
     }
   };
 
-  if (loading) return <div>Đang tải...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading)
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-red-500"></div>
+      </div>
+    );
+
+  if (error)
+    return (
+      <div className="flex justify-center items-center min-h-screen text-red-500">
+        <p>{error}</p>
+      </div>
+    );
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -102,58 +114,57 @@ function Home() {
         <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-6">
           Sản phẩm nổi bật
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
-          {selectedProducts.map((product) => (
-            <div
-              key={product.ProductID}
-              className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition duration-300 hover:scale-105"
-            >
-              <Link to={`/products/${product.Slug}`} className="block">
-                <div className="aspect-w-1 aspect-h-1 bg-gray-200 p-4">
-                  <img
-                    src={
-                      product.Thumbnail
-                        ? `http://localhost:5000/assets/image/products/${product.Thumbnail}`
-                        : product.variants?.[0]?.colors?.[0]?.images?.[0]
-                            ?.ImageURL || 'path/to/default/image.jpg'
-                    }
-                    alt={product.Name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = 'path/to/default/image.jpg';
-                    }}
-                  />
-                </div>
-                <div className="p-4">
-                  <h3
-                    className="text-lg font-medium text-gray-900 mb-2"
-                    style={{
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                    title={product.Name}
-                  >
-                    {product.Name}
-                  </h3>
-                  <p className="text-red-600 font-semibold">
-                    {product.variants[0]?.Price.toLocaleString('vi-VN')} ₫
-                  </p>
-                  <button
-                    className="w-full mt-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-300"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      // Add to cart logic here
-                    }}
-                  >
-                    Thêm vào giỏ
-                  </button>
-                </div>
-              </Link>
-            </div>
-          ))}
-        </div>
+        {products.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
+            {selectedProducts.map((product) => (
+              <div
+                key={product.ProductID}
+                className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition duration-300 hover:scale-105"
+              >
+                <Link to={`/products/${product.Slug}`} className="block">
+                  <div className="aspect-w-1 aspect-h-1 bg-gray-200 py-4">
+                    <img
+                      src={product.Thumbnail}
+                      alt={product.Name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        // e.target.src = '/default-product.jpg';
+                      }}
+                    />
+                  </div>
+                  <div className="p-4">
+                    <h3
+                      className="text-lg font-medium text-gray-900 mb-2"
+                      style={{
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                      title={product.Name}
+                    >
+                      {product.Name}
+                    </h3>
+                    <p className="text-red-600 font-semibold">
+                        {formatCurrency(product.variants && product.variants[0]?.Price)}
+                    </p>
+                    <button
+                      className="w-full mt-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-300"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        // Add to cart logic here
+                      }}
+                    >
+                      Thêm vào giỏ
+                    </button>
+                  </div>
+                </Link>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center text-gray-500">Không có sản phẩm nào</div>
+        )}
       </section>
 
       {/* Pagination */}
