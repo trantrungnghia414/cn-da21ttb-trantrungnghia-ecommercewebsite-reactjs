@@ -10,8 +10,8 @@ const router = express.Router();
 
 router.get("/", getMemorySizes);
 router.post("/", createMemorySize);
-router.get("/:memorySizeID", getMemorySize);
-router.put("/:memorySizeID", updateMemorySize);
-router.delete("/:memorySizeID", deleteMemorySize);
+router.get("/:id", getMemorySize);
+router.put("/:id", updateMemorySize);
+router.delete("/:id", deleteMemorySize);
 
 module.exports = router;

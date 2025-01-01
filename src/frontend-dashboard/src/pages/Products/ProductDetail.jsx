@@ -12,11 +12,22 @@ function ProductDetail() {
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const response = await axiosAppJson.get(`/products/${slug}`);
+                console.log("Fetching product with slug:", slug);
+                const response = await axiosAppJson.get(
+                    `/api/products/${slug}`
+                );
+                console.log("Product data:", response.data);
                 setProduct(response.data);
                 setLoading(false);
             } catch (error) {
-                setError("Không thể tải thông tin sản phẩm");
+                console.error(
+                    "Error fetching product:",
+                    error.response || error
+                );
+                setError(
+                    error.response?.data?.message ||
+                        "Không thể tải thông tin sản phẩm"
+                );
                 setLoading(false);
             }
         };

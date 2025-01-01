@@ -8,8 +8,9 @@ function ProductList() {
 
     const fetchProducts = async () => {
         try {
-            const response = await axiosAppJson.get("/products");
-            // console.log("Dữ liệu sản phẩm nhận được:", response.data);
+            console.log("Đang gọi API...");
+            const response = await axiosAppJson.get("/api/products");
+            console.log("Response data:", response.data);
             setProducts(response.data);
         } catch (error) {
             console.error("Lỗi khi lấy danh sách sản phẩm:", error);
@@ -26,10 +27,10 @@ function ProductList() {
 
         try {
             // Kiểm tra sản phẩm tồn tại
-            await axiosAppJson.get(`/products/${slug}`);
+            await axiosAppJson.get(`/api/products/${slug}`);
 
             // Nếu sản phẩm tồn tại, thực hiện xóa
-            await axiosAppJson.delete(`/products/${slug}`);
+            await axiosAppJson.delete(`/api/products/${slug}`);
 
             // Cập nhật lại danh sách sản phẩm sau khi xóa
             fetchProducts();

@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { axiosAppJson, axiosFromData } from "~/config/axios.config";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import ClassicEditor from '@ckeditor/ckeditor5-build-classic';
 
 function ProductCreate() {
     const navigate = useNavigate();
@@ -439,7 +437,10 @@ function ProductCreate() {
                 });
             });
 
-            const response = await axiosFromData.post("/products", productData);
+            const response = await axiosFromData.post(
+                "/api/products",
+                productData
+            );
             console.log("Sản phẩm đã được tạo:", response.data);
             toast.success("Tạo sản phẩm thành công!");
             navigate("/admin/products");
@@ -460,14 +461,6 @@ function ProductCreate() {
             CategoryID: value,
         }));
         setErrors((prevErrors) => ({ ...prevErrors, CategoryID: "" }));
-    };
-
-    const handleEditorChange = (event, editor) => {
-        const data = editor.getData();
-        setFormData(prev => ({
-            ...prev,
-            Description: data
-        }));
     };
 
     return (
@@ -508,36 +501,13 @@ function ProductCreate() {
                                 <label className="block text-sm font-medium text-gray-700">
                                     Mô tả
                                 </label>
-                                <div className="mt-1">
-                                    <CKEditor
-                                        editor={ClassicEditor}
-                                        data={formData.Description}
-                                        onChange={handleEditorChange}
-                                        config={{
-                                            toolbar: [
-                                                'heading',
-                                                '|',
-                                                'bold',
-                                                'italic',
-                                                'link',
-                                                'bulletedList',
-                                                'numberedList',
-                                                '|',
-                                                'outdent',
-                                                'indent',
-                                                '|',
-                                                'blockQuote',
-                                                'insertTable',
-                                                'undo',
-                                                'redo'
-                                            ],
-                                            language: 'vi',
-                                            table: {
-                                                contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
-                                            }
-                                        }}
-                                    />
-                                </div>
+                                <textarea
+                                    name="Description"
+                                    rows={3}
+                                    value={formData.Description}
+                                    onChange={handleChange}
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                />
                             </div>
 
                             <div>

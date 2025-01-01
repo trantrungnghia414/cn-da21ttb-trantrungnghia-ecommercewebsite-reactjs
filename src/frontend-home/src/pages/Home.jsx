@@ -16,13 +16,14 @@ function Home() {
     const fetchData = async () => {
       try {
         const [productsRes, categoriesRes] = await Promise.all([
-          axiosClient.get('/products'),
-          axiosClient.get('/categories'),
+          axiosClient.get('/api/products'),
+          axiosClient.get('/api/categories'),
         ]);
         setProducts(productsRes.data);
         setCategories(categoriesRes.data);
         setLoading(false);
       } catch (error) {
+        console.error('Error fetching data:', error);
         setError('Không thể tải dữ liệu');
         setLoading(false);
       }
@@ -146,7 +147,9 @@ function Home() {
                       {product.Name}
                     </h3>
                     <p className="text-red-600 font-semibold">
-                        {formatCurrency(product.variants && product.variants[0]?.Price)}
+                      {formatCurrency(
+                        product.variants && product.variants[0]?.Price,
+                      )}
                     </p>
                     <button
                       className="w-full mt-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition duration-300"
