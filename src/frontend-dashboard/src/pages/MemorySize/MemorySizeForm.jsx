@@ -24,8 +24,11 @@ function MemorySizeForm() {
                 setCategories(categoriesRes.data);
 
                 if (isEditMode) {
-                    const response = await axiosAppJson.get(`/api/memorysizes/${id}`);
-                    const { MemorySize, CategoryID, Category, CreatedAt } = response.data;
+                    console.log("Edit mode with ID:", id);
+                    const response = await axiosAppJson.get(
+                        `/api/memorysizes/${id}`
+                    );
+                    const { MemorySize, CategoryID, CreatedAt } = response.data;
                     setFormData({
                         MemorySize,
                         CategoryID: CategoryID.toString(),
@@ -67,35 +70,6 @@ function MemorySizeForm() {
         return Object.keys(newErrors).length === 0;
     };
 
-    const checkDuplicate = async () => {
-        try {
-            const response = await axiosAppJson.get("/api/memorysizes");
-            const memorySizes = response.data;
-
-            const isDuplicate = memorySizes.some(
-                (item) =>
-                    item.MemorySize.toLowerCase() ===
-                        formData.MemorySize.trim().toLowerCase() &&
-                    Number(item.CategoryID) === Number(formData.CategoryID) &&
-                    (!isEditMode || item.MemorySizeID !== Number(id))
-            );
-
-            if (isDuplicate) {
-                setErrors((prev) => ({
-                    ...prev,
-                    MemorySize:
-                        "Dung lượng này đã tồn tại trong danh mục đã chọn",
-                }));
-                return true;
-            }
-            return false;
-        } catch (error) {
-            console.error("Error checking duplicate:", error);
-            toast.error("Lỗi khi kiểm tra trùng lặp dung lượng");
-            return false;
-        }
-    };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!validateForm()) return;
@@ -118,12 +92,12 @@ function MemorySizeForm() {
         } catch (error) {
             console.error("Error:", error);
             if (error.response?.status === 409) {
-                setErrors(prev => ({
-                    ...prev,
-                    MemorySize: "Dung lượng này đã tồn tại trong danh mục đã chọn"
-                }));
+                toast.error("Dung lượng này đã tồn tại trong danh mục đã chọn");
             } else {
-                toast.error(error.response?.data?.error || "Có lỗi xảy ra khi lưu dung lượng bộ nhớ!");
+                toast.error(
+                    error.response?.data?.error ||
+                        "Có lỗi xảy ra khi lưu dung lượng bộ nhớ!"
+                );
             }
         }
     };

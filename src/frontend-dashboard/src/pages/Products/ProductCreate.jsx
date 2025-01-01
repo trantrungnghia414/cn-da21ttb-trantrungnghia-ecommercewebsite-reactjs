@@ -39,34 +39,34 @@ function ProductCreate() {
     const [thumbnailPreview, setThumbnailPreview] = useState(null);
 
     useEffect(() => {
-        const fetchCategoriesAndBrandsAndSuppliers = async () => {
+        const fetchInitialData = async () => {
             try {
-                const [categoriesResponse, brandsResponse, suppliersResponse] =
+                const [categoriesRes, brandsRes, suppliersRes] =
                     await Promise.all([
-                        axiosAppJson.get("/categories"),
-                        axiosAppJson.get("/brands"),
-                        axiosAppJson.get("/suppliers"),
+                        axiosAppJson.get("/api/categories"),
+                        axiosAppJson.get("/api/brands"),
+                        axiosAppJson.get("/api/suppliers"),
                     ]);
-                setCategories(categoriesResponse.data);
-                setBrands(brandsResponse.data);
-                setSuppliers(suppliersResponse.data);
+
+                setCategories(categoriesRes.data);
+                setBrands(brandsRes.data);
+                setSuppliers(suppliersRes.data);
+
+                // Fetch memory sizes nếu có category được chọn
+                if (formData.CategoryID) {
+                    const memorySizesRes = await axiosAppJson.get(
+                        `/api/memorysizes?categoryId=${formData.CategoryID}`
+                    );
+                    setMemorySizes(memorySizesRes.data);
+                }
             } catch (error) {
-                console.error("Error fetching categories and brands:", error);
+                console.error("Error:", error);
+                toast.error("Lỗi khi tải dữ liệu ban đầu!");
             }
         };
 
-        const fetchMemorySizes = async () => {
-            try {
-                const response = await axiosAppJson.get("/memorysizes");
-                setMemorySizes(response.data);
-            } catch (error) {
-                console.error("Lỗi khi tải kích thước bộ nhớ:", error);
-            }
-        };
-
-        fetchCategoriesAndBrandsAndSuppliers();
-        fetchMemorySizes();
-    }, []);
+        fetchInitialData();
+    }, [formData.CategoryID]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -398,69 +398,96 @@ function ProductCreate() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        if (!validateForm()) return;
+
         try {
-            if (!validateForm()) return;
+            const formDataToSend = new FormData();
 
-            const productData = new FormData();
-            productData.append("Name", formData.Name);
-            productData.append("Slug", formData.Slug);
-            productData.append("Description", formData.Description);
-            productData.append("CategoryID", formData.CategoryID);
-            productData.append("BrandID", formData.BrandID);
-            productData.append("SupplierID", formData.SupplierID);
+            // Tạo slug từ tên sản phẩm (không thêm timestamp)
+            const slug = formData.Name.toLowerCase()
+                .normalize("NFD")
+                .replace(/[\u0300-\u036f]/g, "")
+                .replace(/[đĐ]/g, "d")
+                .replace(/[^a-z0-9]+/g, "-")
+                .replace(/^-+|-+$/g, "");
 
-            // Thêm thumbnail vào formData với key riêng
+            // Thêm thông tin cơ bản
+            formDataToSend.append("Name", formData.Name);
+            formDataToSend.append("Slug", slug);
+            formDataToSend.append("Description", formData.Description || "");
+            formDataToSend.append("CategoryID", formData.CategoryID);
+            formDataToSend.append("BrandID", formData.BrandID);
+            formDataToSend.append("SupplierID", formData.SupplierID);
+
             if (thumbnail) {
-                productData.append("thumbnail", thumbnail);
+                formDataToSend.append("thumbnail", thumbnail);
             }
 
-            // Tạo mảng variants mới không chứa file
-            const variantsData = formData.variants.map((variant) => ({
-                ...variant,
-                colors: variant.colors.map((color) => ({
-                    ...color,
-                    newImagesCount: color.Images.length, // Thêm số lượng ảnh mới
-                    Images: undefined, // Không gửi mảng Images trong JSON
-                })),
-            }));
+            // Chuẩn bị dữ liệu variants
+            const variantsData = formData.variants.map((variant) => {
+                const variantData = {
+                    MemorySize: variant.MemorySize,
+                    Price: parseFloat(variant.Price),
+                    colors: variant.colors.map((color) => ({
+                        ColorName: color.ColorName,
+                        ColorCode: color.ColorCode,
+                        Stock: parseInt(color.Stock),
+                        newImagesCount: color.Images.length, // Thêm số lượng ảnh cho màu này
+                    })),
+                };
+                return variantData;
+            });
 
-            productData.append("Variants", JSON.stringify(variantsData));
+            formDataToSend.append("Variants", JSON.stringify(variantsData));
 
-            // Thêm các file ảnh sản phẩm riêng biệt
+            // Thêm tất cả ảnh sản phẩm
             formData.variants.forEach((variant) => {
                 variant.colors.forEach((color) => {
                     color.Images.forEach((image) => {
-                        if (image.file) {
-                            productData.append("productImages", image.file);
+                        if (image.file instanceof File) {
+                            formDataToSend.append("productImages", image.file);
                         }
                     });
                 });
             });
 
-            const response = await axiosFromData.post(
+            const response = await axiosAppJson.post(
                 "/api/products",
-                productData
+                formDataToSend,
+                {
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
             );
-            console.log("Sản phẩm đã được tạo:", response.data);
+
             toast.success("Tạo sản phẩm thành công!");
             navigate("/admin/products");
         } catch (error) {
-            console.error("Lỗi khi tạo sản phẩm:", error);
+            console.error("Error:", error);
             const errorMessage =
                 error.response?.data?.error || "Có lỗi xảy ra khi tạo sản phẩm";
             toast.error(errorMessage);
-            setErrors({ submit: errorMessage });
         }
     };
 
-    const handleCategoryChange = (e) => {
-        const value = e.target.value;
-        setSelectedCategory(value);
+    const handleCategoryChange = async (e) => {
+        const categoryId = e.target.value;
+        setSelectedCategory(categoryId);
         setFormData((prev) => ({
             ...prev,
-            CategoryID: value,
+            CategoryID: categoryId,
         }));
-        setErrors((prevErrors) => ({ ...prevErrors, CategoryID: "" }));
+
+        try {
+            const response = await axiosAppJson.get(
+                `/api/memorysizes?categoryId=${categoryId}`
+            );
+            setMemorySizes(response.data);
+        } catch (error) {
+            console.error("Error:", error);
+            toast.error("Lỗi khi tải dung lượng bộ nhớ!");
+        }
     };
 
     return (

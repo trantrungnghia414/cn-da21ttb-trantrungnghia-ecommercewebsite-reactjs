@@ -2,18 +2,18 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { axiosAppJson } from "~/config/axios.config";
+import { toast } from "react-hot-toast";
 
 function ProductList() {
     const [products, setProducts] = useState([]);
 
     const fetchProducts = async () => {
         try {
-            console.log("Đang gọi API...");
             const response = await axiosAppJson.get("/api/products");
-            console.log("Response data:", response.data);
             setProducts(response.data);
         } catch (error) {
             console.error("Lỗi khi lấy danh sách sản phẩm:", error);
+            toast.error("Không thể tải danh sách sản phẩm");
         }
     };
 
@@ -32,13 +32,16 @@ function ProductList() {
             // Nếu sản phẩm tồn tại, thực hiện xóa
             await axiosAppJson.delete(`/api/products/${slug}`);
 
+            // Thông báo thành công
+            toast.success("Xóa sản phẩm thành công!");
+
             // Cập nhật lại danh sách sản phẩm sau khi xóa
             fetchProducts();
         } catch (error) {
-            console.error(
-                "Lỗi khi xóa sản phẩm:",
-                error.response ? error.response.data : error.message
-            );
+            console.error("Lỗi khi xóa sản phẩm:", error);
+            const errorMessage =
+                error.response?.data?.error || "Có lỗi xảy ra khi xóa sản phẩm";
+            toast.error(errorMessage);
         }
     };
 

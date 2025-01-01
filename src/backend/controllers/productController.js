@@ -23,6 +23,16 @@ exports.createProduct = async (req, res) => {
         // Lấy tên file cho ảnh sản phẩm (bỏ qua file thumbnail)
         const productImageFileNames = formattedFileNames.slice(1);
 
+        // Kiểm tra xem slug đã tồn tại chưa
+        const existingProduct = await db.Product.findOne({
+            where: { Slug },
+            transaction,
+        });
+
+        if (existingProduct) {
+            throw new Error("Sản phẩm với tên này đã tồn tại");
+        }
+
         // Tạo sản phẩm với thumbnail
         const product = await db.Product.create(
             {
@@ -55,15 +65,17 @@ exports.createProduct = async (req, res) => {
                 );
             }
 
+            // Tạo variant
             const productVariant = await db.ProductVariant.create(
                 {
                     ProductID: product.ProductID,
-                    MemorySizeID: memorySize.MemorySizeID, // Sử dụng ID thay vì giá trị string
+                    MemorySizeID: memorySize.MemorySizeID,
                     Price: variant.Price,
                 },
                 { transaction }
             );
 
+            // Xử lý colors và images cho variant
             for (const color of variant.colors) {
                 const productColor = await db.ProductColor.create(
                     {
@@ -95,7 +107,7 @@ exports.createProduct = async (req, res) => {
         await transaction.commit();
         res.status(201).json({
             message: "Tạo sản phẩm thành công",
-            slug: Slug,
+            productId: product.ProductID,
         });
     } catch (error) {
         await transaction.rollback();
