@@ -9,6 +9,7 @@ import 'swiper/css/free-mode';
 import 'swiper/css/navigation';
 import 'swiper/css/thumbs';
 import '~/assets/styles/index.css';
+import { Link } from 'react-router-dom';
 
 function ProductDetail() {
   const { slug } = useParams();
@@ -19,9 +20,10 @@ function ProductDetail() {
   const [error, setError] = useState(null);
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const mainSwiperRef = useRef(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
 
   useEffect(() => {
-    // Scroll to top when component mounts
+    // Scroll lên đầu trang khi component mount
     window.scrollTo(0, 0);
 
     const fetchProduct = async () => {
@@ -48,6 +50,29 @@ function ProductDetail() {
 
     fetchProduct();
   }, [slug]);
+
+  useEffect(() => {
+    const fetchRelatedProducts = async () => {
+      try {
+        if (product?.CategoryID) {
+          const response = await axiosClient.get(`/api/products`, {
+            params: {
+              category: product.CategoryID,
+              exclude: product.ProductID,
+              limit: 10, // Giới hạn 10 sản phẩm liên quan
+            },
+          });
+          setRelatedProducts(response.data);
+        }
+      } catch (error) {
+        console.error('Error fetching related products:', error);
+      }
+    };
+
+    if (product) {
+      fetchRelatedProducts();
+    }
+  }, [product]);
 
   const handleVariantChange = (variant) => {
     setSelectedVariant(variant);
@@ -271,6 +296,7 @@ function ProductDetail() {
           </div>
         </div>
       </div>
+
       {/* Chức năng bình luận */}
       <div className="mt-8">
         <h2 className="text-2xl font-bold mb-4">Bình luận</h2>
@@ -284,6 +310,73 @@ function ProductDetail() {
             />
           </div>
         </div>
+      </div>
+
+      {/* Phần sản phẩm liên quan */}
+      <div className="mt-16">
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          Sản phẩm liên quan
+        </h2>
+
+        {relatedProducts.length > 0 ? (
+          <Swiper
+            slidesPerView={1}
+            spaceBetween={20}
+            navigation={true}
+            modules={[Navigation]}
+            className="related-products-slider"
+            breakpoints={{
+              640: {
+                slidesPerView: 3,
+                spaceBetween: 10,
+              },
+              768: {
+                slidesPerView: 4,
+                spaceBetween: 10,
+              },
+              1024: {
+                slidesPerView: 6,
+                spaceBetween: 10,
+              },
+            }}
+          >
+            {relatedProducts.map((relatedProduct) => (
+              <SwiperSlide key={relatedProduct.ProductID}>
+                <Link
+                  to={`/products/${relatedProduct.Slug}`}
+                  className="block group"
+                >
+                  <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-lg hover:-translate-y-1">
+                    <div className="aspect-w-1 aspect-h-1 p-4">
+                      <img
+                        src={relatedProduct.Thumbnail}
+                        alt={relatedProduct.Name}
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    <div className="p-3">
+                      <h3 className="text-lg font-medium text-gray-900 mb-2 line-clamp-2 group-hover:text-red-600">
+                        {relatedProduct.Name}
+                      </h3>
+                      <div className="flex items-center justify-between">
+                        <p className="text-red-600 font-bold">
+                          {formatCurrency(relatedProduct.variants?.[0]?.Price)}
+                        </p>
+                        <span className="text-sm text-gray-500">
+                          {relatedProduct.variants?.[0]?.memorySize?.MemorySize}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        ) : (
+          <div className="text-center text-gray-500">
+            Không có sản phẩm liên quan
+          </div>
+        )}
       </div>
     </div>
   );

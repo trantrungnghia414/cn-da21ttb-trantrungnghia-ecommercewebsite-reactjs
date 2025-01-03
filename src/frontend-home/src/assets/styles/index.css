@@ -1,4 +1,6 @@
 /* Có thể thêm vào file CSS global hoặc module CSS */
+
+/* SẢN PHẨM CHÍNH */
 .swiper-slide {
     background: #fff; 
 }
@@ -52,5 +54,35 @@
     .swiper-button-next:after,
     .swiper-button-prev:after {
         font-size: 15px !important;
+    }
+}
+
+/* SẢN PHẨM LIÊN QUAN */
+/* Có thể thêm vào file CSS của bạn */
+.related-products-slider .swiper-button-next,
+.related-products-slider .swiper-button-prev {
+    color: #ef4444;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 20px;
+    border-radius: 50%;
+    width: 40px !important;
+    height: 40px !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.related-products-slider .swiper-button-next:after,
+.related-products-slider .swiper-button-prev:after {
+    font-size: 20px !important;
+}
+
+.related-products-slider .swiper-button-next:hover,
+.related-products-slider .swiper-button-prev:hover {
+    background-color: rgba(255, 255, 255, 1);
+}
+
+@media (max-width: 768px) {
+    .related-products-slider .swiper-button-next,
+    .related-products-slider .swiper-button-prev {
+        display: none;
     }
 }

@@ -154,7 +154,53 @@ exports.createProduct = async (req, res) => {
 
 exports.getProducts = async (req, res) => {
     try {
+        const { category, brand, sort } = req.query;
+
+        // Xây dựng điều kiện where
+        const whereClause = {};
+        if (category && category !== "all") {
+            whereClause.CategoryID = category;
+        }
+        if (brand && brand !== "all") {
+            whereClause.BrandID = brand;
+        }
+
+        // Xây dựng điều kiện order
+        let orderClause = [];
+        if (sort) {
+            switch (sort) {
+                case "price-asc":
+                    orderClause = [
+                        [
+                            { model: db.ProductVariant, as: "variants" },
+                            "Price",
+                            "ASC",
+                        ],
+                    ];
+                    break;
+                case "price-desc":
+                    orderClause = [
+                        [
+                            { model: db.ProductVariant, as: "variants" },
+                            "Price",
+                            "DESC",
+                        ],
+                    ];
+                    break;
+                case "name-asc":
+                    orderClause = [["Name", "ASC"]];
+                    break;
+                case "name-desc":
+                    orderClause = [["Name", "DESC"]];
+                    break;
+                default:
+                    orderClause = [["ProductID", "DESC"]]; // Mặc định sắp xếp theo ID mới nhất
+            }
+        }
+
         const products = await db.Product.findAll({
+            where: whereClause,
+            order: orderClause,
             include: [
                 {
                     model: db.Category,
@@ -194,12 +240,9 @@ exports.getProducts = async (req, res) => {
 
         // Thêm tiền tố vào tên ảnh và thumbnail
         const productsWithImagePrefix = products.map((product) => {
-            // Thêm tiền tố cho thumbnail
             if (product.Thumbnail) {
                 product.Thumbnail = `http://localhost:5000/assets/image/products/${product.Thumbnail}`;
             }
-
-            // Thêm tiền tố cho ảnh sản phẩm
             product.variants.forEach((variant) => {
                 variant.colors.forEach((color) => {
                     color.images.forEach((image) => {

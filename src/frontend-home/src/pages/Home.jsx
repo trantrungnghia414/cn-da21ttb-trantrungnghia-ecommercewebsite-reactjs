@@ -123,14 +123,13 @@ function Home() {
                 className="bg-white rounded-lg shadow-lg overflow-hidden hover:shadow-2xl transition duration-300 hover:scale-105"
               >
                 <Link to={`/products/${product.Slug}`} className="block">
-                  <div className="aspect-w-1 aspect-h-1 bg-gray-200 py-4">
+                  <div className="aspect-w-1 aspect-h-1 bg-gray-50 p-4">
                     <img
                       src={product.Thumbnail}
                       alt={product.Name}
                       className="w-full h-full object-cover"
                       onError={(e) => {
                         e.target.onerror = null;
-                        // e.target.src = '/default-product.jpg';
                       }}
                     />
                   </div>
