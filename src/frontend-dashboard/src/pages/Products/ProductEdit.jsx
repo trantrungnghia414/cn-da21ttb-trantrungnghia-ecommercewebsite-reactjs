@@ -30,6 +30,8 @@ function ProductEdit() {
     const [thumbnailPreview, setThumbnailPreview] = useState(null);
     const [newThumbnail, setNewThumbnail] = useState(null);
     const [deletedVariants, setDeletedVariants] = useState([]);
+    const [changedColors, setChangedColors] = useState({});
+    const [memorySizeChanges, setMemorySizeChanges] = useState({});
 
     useEffect(() => {
         const fetchData = async () => {
@@ -164,17 +166,17 @@ function ProductEdit() {
                 toast.error("Dung lượng này đã tồn tại trong biến thể khác!");
                 return;
             }
-        }
 
-        if (field === "Price") {
-            const numericValue = value.replace(/[^0-9]/g, "");
-
-            if (numericValue.length > 8) {
-                toast.error("Giá không được vượt quá 8 chữ số!");
-                return;
+            const variant = formData.variants[index];
+            if (variant.VariantID) {
+                setMemorySizeChanges((prev) => ({
+                    ...prev,
+                    [variant.VariantID]: {
+                        oldSize: variant.MemorySize,
+                        newSize: value,
+                    },
+                }));
             }
-
-            value = numericValue;
         }
 
         setFormData((prev) => {
@@ -188,17 +190,32 @@ function ProductEdit() {
     };
 
     const handleColorChange = (variantIndex, colorIndex, field, value) => {
+        console.log("Color change:", {
+            variantIndex,
+            colorIndex,
+            field,
+            value,
+        });
+
         setFormData((prev) => {
             const newVariants = [...prev.variants];
-            const newColors = [...newVariants[variantIndex].colors];
-            newColors[colorIndex] = {
-                ...newColors[colorIndex],
-                [field]: value,
-            };
-            newVariants[variantIndex] = {
-                ...newVariants[variantIndex],
-                colors: newColors,
-            };
+            const color = newVariants[variantIndex].colors[colorIndex];
+
+            // Lưu giá trị cũ trước khi thay đổi
+            const oldValue = color[field];
+            color[field] = value;
+
+            // Nếu thay đổi ColorName hoặc ColorCode, đánh dấu là đã thay đổi
+            if (
+                (field === "ColorName" || field === "ColorCode") &&
+                oldValue !== value
+            ) {
+                setChangedColors((prev) => ({
+                    ...prev,
+                    [`${variantIndex}-${colorIndex}`]: true,
+                }));
+            }
+
             return { ...prev, variants: newVariants };
         });
     };
@@ -386,6 +403,42 @@ function ProductEdit() {
             }
 
             variant.colors.forEach((color, colorIndex) => {
+                const colorKey = `${variantIndex}-${colorIndex}`;
+                const hasColorChanged = changedColors[colorKey];
+
+                // Kiểm tra nếu màu đã thay đổi
+                if (hasColorChanged) {
+                    const hasNewImages = color.Images.some(
+                        (img) => !img.isExisting
+                    );
+                    if (!hasNewImages) {
+                        newErrors[
+                            `variant${variantIndex}color${colorIndex}Images`
+                        ] =
+                            "Bạn phải upload ảnh mới khi thay đổi thông tin màu";
+                        toast.error(
+                            `Biến thể ${variantIndex + 1}, Màu ${
+                                colorIndex + 1
+                            }: Yêu cầu upload ảnh mới khi thay đổi thông tin màu`
+                        );
+                    }
+                } else {
+                    // Nếu màu không thay đổi, giữ nguyên ảnh cũ
+                    const existingImages = color.Images.filter(
+                        (img) => img.isExisting
+                    ).length;
+                    if (existingImages === 0) {
+                        newErrors[
+                            `variant${variantIndex}color${colorIndex}Images`
+                        ] = "Vui lòng thêm ít nhất một ảnh cho màu này";
+                        toast.error(
+                            `Biến thể ${variantIndex + 1}, Màu ${
+                                colorIndex + 1
+                            }: Vui lòng thêm ít nhất một ảnh`
+                        );
+                    }
+                }
+
                 if (!color.ColorName) {
                     newErrors[
                         `variant${variantIndex}color${colorIndex}ColorName`
@@ -455,33 +508,6 @@ function ProductEdit() {
                             }: Số lượng không được vượt quá 1000`
                         );
                     }
-                }
-
-                const existingImages = color.Images.filter(
-                    (img) => img.isExisting
-                ).length;
-                const newImages = color.Images.filter(
-                    (img) => !img.isExisting
-                ).length;
-
-                if (existingImages + newImages === 0) {
-                    newErrors[
-                        `variant${variantIndex}color${colorIndex}Images`
-                    ] = "Vui lòng thêm ít nhất một ảnh cho màu này";
-                    toast.error(
-                        `Biến thể ${variantIndex + 1}, Màu ${
-                            colorIndex + 1
-                        }: Vui lòng thêm ít nhất một ảnh`
-                    );
-                } else if (newImages > 8) {
-                    newErrors[
-                        `variant${variantIndex}color${colorIndex}Images`
-                    ] = "Không được thêm quá 8 ảnh mới cho một màu";
-                    toast.error(
-                        `Biến thể ${variantIndex + 1}, Màu ${
-                            colorIndex + 1
-                        }: Không được thêm quá 8 ảnh mới cho một màu`
-                    );
                 }
             });
         });
@@ -568,6 +594,14 @@ function ProductEdit() {
                 productData.append(
                     "deletedVariants",
                     JSON.stringify(deletedVariants)
+                );
+            }
+
+            // Thêm thông tin về thay đổi dung lượng
+            if (Object.keys(memorySizeChanges).length > 0) {
+                productData.append(
+                    "memorySizeChanges",
+                    JSON.stringify(memorySizeChanges)
                 );
             }
 
@@ -991,6 +1025,20 @@ function ProductEdit() {
                                                                         )
                                                                     )}
                                                                 </div>
+
+                                                                {changedColors[
+                                                                    `${variantIndex}-${colorIndex}`
+                                                                ] && (
+                                                                    <div className="text-yellow-600 text-sm mt-2">
+                                                                        * Bạn đã
+                                                                        thay đổi
+                                                                        thông
+                                                                        tin màu.
+                                                                        Vui lòng
+                                                                        upload
+                                                                        ảnh mới.
+                                                                    </div>
+                                                                )}
 
                                                                 {colorIndex >
                                                                     0 && (

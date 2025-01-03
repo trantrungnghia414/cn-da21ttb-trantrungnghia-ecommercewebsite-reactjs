@@ -511,7 +511,12 @@ exports.updateProduct = async (req, res) => {
             product.variants.map((variant) => [variant.MemorySizeID, variant])
         );
 
-        // Xử lý từng variant mới
+        // Xử lý thay đổi dung lượng
+        const memorySizeChanges = req.body.memorySizeChanges
+            ? JSON.parse(req.body.memorySizeChanges)
+            : {};
+
+        // Xử lý từng variant
         for (const variant of variants) {
             const memorySizeRecord = memorySizeRecords.find(
                 (ms) => ms.MemorySize === variant.MemorySize
@@ -523,12 +528,38 @@ exports.updateProduct = async (req, res) => {
                 );
             }
 
+            // Kiểm tra xem variant này có phải là variant đã thay đổi dung lượng không
+            const variantChange = memorySizeChanges[variant.VariantID];
+
+            if (variantChange && variant.VariantID) {
+                // Tìm variant hiện tại
+                const existingVariant = await db.ProductVariant.findOne({
+                    where: { VariantID: variant.VariantID },
+                    transaction,
+                });
+
+                if (existingVariant) {
+                    // Cập nhật variant với dung lượng mới
+                    await existingVariant.update(
+                        {
+                            MemorySizeID: memorySizeRecord.MemorySizeID,
+                            Price: variant.Price,
+                        },
+                        { transaction }
+                    );
+
+                    // Không cần tạo variant mới vì chỉ cập nhật dung lượng
+                    continue;
+                }
+            }
+
+            // Xử lý các trường hợp khác như bình thường
             const existingVariant = existingVariantsMap.get(
                 memorySizeRecord.MemorySizeID
             );
 
-            // Nếu variant đã tồn tại, cập nhật nó
             if (existingVariant) {
+                // Cập nhật thông tin variant hiện tại
                 await existingVariant.update(
                     { Price: variant.Price },
                     { transaction }
