@@ -60,7 +60,7 @@ function ProductCreate() {
                     setMemorySizes(memorySizesRes.data);
                 }
             } catch (error) {
-                console.error("Error:", error);
+                // console.error("Error:", error);
                 toast.error("Lỗi khi tải dữ liệu ban đầu!");
             }
         };
@@ -206,7 +206,7 @@ function ProductCreate() {
     };
 
     const addColor = (variantIndex) => {
-        console.log(`Adding color to variant ${variantIndex}`);
+        // console.log(`Adding color to variant ${variantIndex}`);
         const newVariants = [...formData.variants];
 
         newVariants[variantIndex].colors.push({
@@ -229,13 +229,10 @@ function ProductCreate() {
     const validateForm = () => {
         const newErrors = {};
 
-        // Validate thông tin cơ bản
-        if (!formData.Name) {
-            newErrors.Name = "Tên sản phẩm không được để trống";
-            toast.error("Tên sản phẩm không được để trống");
-        } else if (formData.Name.length < 3) {
-            newErrors.Name = "Tên sản phẩm phải có ít nhất 3 ký tự";
-            toast.error("Tên sản phẩm phải có ít nhất 3 ký tự");
+        // Kiểm tra các trường cơ bản
+        if (!formData.Name?.trim()) {
+            newErrors.Name = "Vui lòng nhập tên sản phẩm";
+            toast.error("Vui lòng nhập tên sản phẩm");
         }
 
         if (!formData.CategoryID) {
@@ -253,7 +250,8 @@ function ProductCreate() {
             toast.error("Vui lòng chọn nhà cung cấp");
         }
 
-        // Validate variants
+        // Kiểm tra trùng dung lượng trong variants
+        const memorySizes = new Set();
         formData.variants.forEach((variant, variantIndex) => {
             if (!variant.MemorySize) {
                 newErrors[`variant${variantIndex}MemorySize`] =
@@ -263,38 +261,28 @@ function ProductCreate() {
                         variantIndex + 1
                     }: Vui lòng chọn dung lượng bộ nhớ`
                 );
-            }
-
-            if (!variant.Price) {
-                newErrors[`variant${variantIndex}Price`] =
-                    "Vui lòng nhập giá sản phẩm";
+            } else if (memorySizes.has(variant.MemorySize)) {
+                newErrors[`variant${variantIndex}MemorySize`] =
+                    "Dung lượng bộ nhớ này đã tồn tại";
                 toast.error(
-                    `Biến thể ${variantIndex + 1}: Vui lòng nhập giá sản phẩm`
+                    `Biến thể ${variantIndex + 1}: Dung lượng ${
+                        variant.MemorySize
+                    } đã tồn tại trong sản phẩm này`
                 );
             } else {
-                const price = parseFloat(variant.Price);
-                if (isNaN(price)) {
-                    newErrors[`variant${variantIndex}Price`] =
-                        "Giá phải là một số";
-                    toast.error(
-                        `Biến thể ${variantIndex + 1}: Giá phải là một số`
-                    );
-                } else if (price <= 0) {
-                    newErrors[`variant${variantIndex}Price`] =
-                        "Giá phải lớn hơn 0";
-                    toast.error(
-                        `Biến thể ${variantIndex + 1}: Giá phải lớn hơn 0`
-                    );
-                } else if (price > 1000000000) {
-                    // 1 tỷ VNĐ
-                    newErrors[`variant${variantIndex}Price`] =
-                        "Giá không được vượt quá 1 tỷ VNĐ";
-                    toast.error(
-                        `Biến thể ${
-                            variantIndex + 1
-                        }: Giá không được vượt quá 1 tỷ VNĐ`
-                    );
-                }
+                memorySizes.add(variant.MemorySize);
+            }
+
+            // Kiểm tra giá
+            if (!variant.Price) {
+                newErrors[`variant${variantIndex}Price`] = "Vui lòng nhập giá";
+                toast.error(`Biến thể ${variantIndex + 1}: Vui lòng nhập giá`);
+            } else if (isNaN(variant.Price) || variant.Price <= 0) {
+                newErrors[`variant${variantIndex}Price`] =
+                    "Giá phải là số dương";
+                toast.error(
+                    `Biến thể ${variantIndex + 1}: Giá phải là số dương`
+                );
             }
 
             // Validate colors
@@ -464,7 +452,7 @@ function ProductCreate() {
             toast.success("Tạo sản phẩm thành công!");
             navigate("/admin/products");
         } catch (error) {
-            console.error("Error:", error);
+            // console.error("Error:", error);
             const errorMessage =
                 error.response?.data?.error || "Có lỗi xảy ra khi tạo sản phẩm";
             toast.error(errorMessage);
@@ -485,7 +473,7 @@ function ProductCreate() {
             );
             setMemorySizes(response.data);
         } catch (error) {
-            console.error("Error:", error);
+            // console.error("Error:", error);
             toast.error("Lỗi khi tải dung lượng bộ nhớ!");
         }
     };

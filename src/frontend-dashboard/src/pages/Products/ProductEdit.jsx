@@ -28,6 +28,8 @@ function ProductEdit() {
     const [errors, setErrors] = useState({});
     const [selectedCategory, setSelectedCategory] = useState("");
     const [thumbnailPreview, setThumbnailPreview] = useState(null);
+    const [newThumbnail, setNewThumbnail] = useState(null);
+    const [deletedVariants, setDeletedVariants] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -56,6 +58,7 @@ function ProductEdit() {
                     SupplierID: product.SupplierID.toString(),
                     Thumbnail: product.Thumbnail,
                     variants: product.variants.map((variant) => ({
+                        VariantID: variant.VariantID,
                         MemorySize: variant.memorySize.MemorySize,
                         Price: variant.Price ? variant.Price.toString() : "0",
                         colors: variant.colors.map((color) => ({
@@ -202,32 +205,30 @@ function ProductEdit() {
 
     const handleImageChange = (variantIndex, colorIndex, e) => {
         const files = Array.from(e.target.files);
+        if (files.length > 0) {
+            setFormData((prev) => {
+                const newVariants = [...prev.variants];
+                const variant = newVariants[variantIndex];
+                const color = variant.colors[colorIndex];
 
-        setFormData((prev) => {
-            const newVariants = [...prev.variants];
-            const newColors = [...newVariants[variantIndex].colors];
+                // Giữ lại ảnh cũ
+                const existingImages =
+                    color.Images.filter((img) => img.isExisting) || [];
 
-            const existingImages =
-                newColors[colorIndex].Images.filter((img) => img.isExisting) ||
-                [];
+                // Tạo URL preview cho ảnh mới
+                const newImages = files.map((file) => ({
+                    file: file,
+                    url: URL.createObjectURL(file),
+                    isExisting: false,
+                }));
 
-            const newImages = files.map((file) => ({
-                file,
-                url: URL.createObjectURL(file),
-                isExisting: false,
-            }));
+                // Cập nhật state
+                color.Images = [...existingImages, ...newImages];
+                color.hasNewImages = "true";
 
-            newColors[colorIndex] = {
-                ...newColors[colorIndex],
-                Images: [...existingImages, ...newImages],
-            };
-
-            newVariants[variantIndex] = {
-                ...newVariants[variantIndex],
-                colors: newColors,
-            };
-            return { ...prev, variants: newVariants };
-        });
+                return { ...prev, variants: newVariants };
+            });
+        }
     };
 
     const addVariant = () => {
@@ -289,33 +290,21 @@ function ProductEdit() {
     };
 
     const removeVariant = (index) => {
-        if (!formData.variants[index]) return;
-
         const variantToRemove = formData.variants[index];
+        console.log("Removing variant:", variantToRemove);
 
-        setFormData((prev) => {
-            const newVariants = prev.variants.filter((_, i) => i !== index);
+        if (variantToRemove?.VariantID) {
+            console.log(
+                "Adding to deletedVariants:",
+                variantToRemove.VariantID
+            );
+            setDeletedVariants((prev) => [...prev, variantToRemove.VariantID]);
+        }
 
-            if (newVariants.length === 0) {
-                const defaultMemorySize = filteredMemorySizes[0]?.MemorySize;
-                if (defaultMemorySize) {
-                    newVariants.push({
-                        MemorySize: defaultMemorySize,
-                        Price: "0",
-                        colors: [
-                            {
-                                ColorName: "",
-                                ColorCode: "",
-                                Stock: "0",
-                                Images: [],
-                            },
-                        ],
-                    });
-                }
-            }
-
-            return { ...prev, variants: newVariants };
-        });
+        setFormData((prev) => ({
+            ...prev,
+            variants: prev.variants.filter((_, i) => i !== index),
+        }));
     };
 
     const removeColor = (variantIndex, colorIndex) => {
@@ -504,10 +493,7 @@ function ProductEdit() {
     const handleThumbnailUpload = (e) => {
         const file = e.target.files[0];
         if (file) {
-            setFormData((prev) => ({
-                ...prev,
-                Thumbnail: file,
-            }));
+            setNewThumbnail(file);
             setThumbnailPreview(URL.createObjectURL(file));
         }
     };
@@ -522,93 +508,99 @@ function ProductEdit() {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!validateForm()) {
-            toast.error("Vui lòng kiểm tra lại thông tin!");
-            return;
-        }
+        if (!validateForm()) return;
 
         try {
             const productData = new FormData();
+            const colorKeys = [];
+
+            // Append thông tin cơ bản
             productData.append("Name", formData.Name);
             productData.append("Description", formData.Description || "");
             productData.append("CategoryID", formData.CategoryID);
             productData.append("BrandID", formData.BrandID);
             productData.append("SupplierID", formData.SupplierID);
 
-            const variantsData = formData.variants.map((variant) => {
-                return {
-                    MemorySize: variant.MemorySize,
-                    Price: variant.Price,
-                    colors: variant.colors.map((color) => {
-                        const newImages = color.Images.filter(
-                            (img) => !img.isExisting
-                        );
-                        return {
-                            ColorName: color.ColorName,
-                            ColorCode: color.ColorCode,
-                            Stock: color.Stock,
-                            hasNewImages: newImages.length > 0,
-                            newImagesCount: newImages.length,
-                            existingImages: color.Images.filter(
-                                (img) => img.isExisting
-                            ).map((img) => img.url),
-                        };
-                    }),
-                };
-            });
+            // Xử lý variants và images
+            const variantsData = formData.variants.map((variant) => ({
+                ...variant,
+                colors: variant.colors.map((color) => ({
+                    ...color,
+                    // Chỉ gửi thông tin cần thiết, không gửi file
+                    Images: color.Images.filter((img) => img.isExisting).map(
+                        (img) => ({
+                            ImageURL: img.url || img.ImageURL,
+                        })
+                    ),
+                })),
+            }));
 
             productData.append("Variants", JSON.stringify(variantsData));
 
-            let imageIndex = 0;
+            // Xử lý thumbnail mới nếu có
+            if (newThumbnail) {
+                productData.append("thumbnail", newThumbnail);
+                productData.append("hasNewThumbnail", "true");
+            }
+
+            // Xử lý ảnh sản phẩm mới
             formData.variants.forEach((variant, variantIndex) => {
                 variant.colors.forEach((color, colorIndex) => {
-                    const newImages = color.Images.filter(
-                        (img) => !img.isExisting
-                    );
-                    newImages.forEach((image) => {
-                        if (image.file) {
-                            productData.append(`images`, image.file);
-                            productData.append(
-                                `imageMetadata_${imageIndex}`,
-                                JSON.stringify({
-                                    variantIndex,
-                                    colorIndex,
-                                    fileName: image.file.name,
-                                })
-                            );
-                            imageIndex++;
-                        }
-                    });
+                    if (color.hasNewImages === "true") {
+                        color.Images.forEach((image) => {
+                            if (!image.isExisting && image.file) {
+                                productData.append("productImages", image.file);
+                                colorKeys.push(
+                                    `${variant.MemorySize}-${color.ColorName}`
+                                );
+                            }
+                        });
+                    }
                 });
             });
 
-            productData.append("totalImages", imageIndex);
-
-            if (formData.Thumbnail instanceof File) {
-                productData.append("thumbnail", formData.Thumbnail);
+            if (colorKeys.length > 0) {
+                productData.append("colorKeys", JSON.stringify(colorKeys));
             }
 
-            console.log("Variants data:", variantsData);
-            console.log("Total images:", imageIndex);
-            console.log("Form data entries:", [...productData.entries()]);
+            // Thêm thông tin về các biến thể đã xóa
+            if (deletedVariants.length > 0) {
+                productData.append(
+                    "deletedVariants",
+                    JSON.stringify(deletedVariants)
+                );
+            }
 
+            // Gửi request
             const response = await axiosFromData.put(
                 `/api/products/${slug}`,
                 productData
             );
 
-            console.log("Server response:", response.data);
-            toast.success("Cập nhật sản phẩm thành công!");
+            toast.success("Cập nhật sản phẩm thành công");
             navigate("/admin/products");
         } catch (error) {
-            console.error("Error details:", error);
-            console.error("Server error response:", error.response?.data);
-            const errorMessage =
-                error.response?.data?.error ||
-                "Có lỗi xảy ra khi cập nhật sản phẩm";
-            toast.error(errorMessage);
+            console.error("Error updating product:", error);
+            toast.error(
+                error.response?.data?.error || "Lỗi khi cập nhật sản phẩm"
+            );
         }
     };
+
+    useEffect(() => {
+        return () => {
+            // Cleanup tất cả URL preview khi component unmount
+            formData?.variants?.forEach((variant) => {
+                variant.colors?.forEach((color) => {
+                    color.Images?.forEach((image) => {
+                        if (!image.isExisting && image.previewUrl) {
+                            URL.revokeObjectURL(image.previewUrl);
+                        }
+                    });
+                });
+            });
+        };
+    }, [formData]);
 
     if (loading) return <div>Đang tải...</div>;
     if (error) return <div>{error}</div>;
@@ -736,38 +728,40 @@ function ProductEdit() {
                                 <label className="block text-sm font-medium text-gray-700">
                                     Ảnh thumbnail
                                 </label>
-                                <div className="mt-1 flex items-center">
-                                    <span className="inline-block h-32 w-32 rounded-lg overflow-hidden bg-gray-100">
-                                        {thumbnailPreview ? (
-                                            <img
-                                                src={thumbnailPreview}
-                                                alt="Thumbnail preview"
-                                                className="h-full w-full object-cover"
-                                            />
-                                        ) : (
-                                            <svg
-                                                className="h-full w-full text-gray-300"
-                                                fill="currentColor"
-                                                viewBox="0 0 24 24"
-                                            >
-                                                <path d="M24 20.993V24H0v-2.996A14.977 14.977 0 0112.004 15c4.904 0 9.26 2.354 11.996 5.993zM16.002 8.999a4 4 0 11-8 0 4 4 0 018 0z" />
-                                            </svg>
-                                        )}
-                                    </span>
-                                    <label
-                                        htmlFor="thumbnail-upload"
-                                        className="ml-5 bg-white py-2 px-3 border border-gray-300 rounded-md shadow-sm text-sm leading-4 font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer"
-                                    >
-                                        Thay đổi
-                                    </label>
+                                <div className="mt-1">
                                     <input
+                                        type="file"
                                         id="thumbnail-upload"
                                         name="thumbnail"
-                                        type="file"
-                                        accept="image/*"
-                                        className="sr-only"
                                         onChange={handleThumbnailUpload}
+                                        className="mt-1 block w-full text-sm text-gray-500
+                                        file:mr-4 file:py-2 file:px-4
+                                        file:rounded-md file:border-0
+                                        file:text-sm file:font-semibold
+                                        file:bg-blue-50 file:text-blue-700
+                                        hover:file:bg-blue-100"
+                                        accept="image/*"
                                     />
+                                </div>
+                                <div className="mt-4 grid grid-cols-8 gap-4">
+                                    {formData.Thumbnail && (
+                                        <div className="relative border rounded-lg overflow-hidden shadow-sm">
+                                            <img
+                                                src={formData.Thumbnail}
+                                                alt="Current thumbnail"
+                                                className="w-full h-full p-2 object-cover rounded"
+                                            />
+                                        </div>
+                                    )}
+                                    {newThumbnail && (
+                                        <div className="relative border rounded-lg overflow-hidden shadow-sm">
+                                            <img
+                                                src={thumbnailPreview}
+                                                alt="New thumbnail preview"
+                                                className="w-full h-full p-2 object-cover rounded"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         </div>

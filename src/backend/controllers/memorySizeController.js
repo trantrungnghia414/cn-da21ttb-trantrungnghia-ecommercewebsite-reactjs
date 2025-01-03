@@ -111,9 +111,9 @@ exports.updateMemorySize = async (req, res) => {
         }
 
         // Cập nhật
-        await memorySize.update({ 
-            MemorySize, 
-            CategoryID 
+        await memorySize.update({
+            MemorySize,
+            CategoryID,
         });
 
         // Trả về dữ liệu đã cập nhật kèm theo thông tin Category

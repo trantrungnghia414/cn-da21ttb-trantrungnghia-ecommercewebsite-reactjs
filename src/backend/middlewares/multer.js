@@ -1,6 +1,7 @@
 const multer = require("multer");
 const path = require("path");
-const fs = require("fs");
+const fs = require("fs").promises;
+const fsSync = require("fs");
 const crypto = require("crypto");
 
 // Tạo thư mục nếu chưa tồn tại
@@ -14,39 +15,83 @@ const generateRandomNumbers = () => {
 // Hàm format tên file
 const formatImageName = (originalname) => {
     const ext = path.extname(originalname);
-    // Tạo hash từ tên gốc + timestamp
     const hash = crypto
         .createHash("md5")
         .update(originalname + Date.now().toString())
         .digest("hex");
-
-    // Thêm 10 số ngẫu nhiên
     const randomNumbers = generateRandomNumbers();
-
     return `${hash}-${randomNumbers}${ext}`;
 };
 
-// Định nghĩa nơi lưu trữ tệp
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        // Tạo thư mục nếu chưa tồn tại
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        const formattedName = formatImageName(file.originalname);
-        // Lưu tên file đã format vào req để sử dụng trong controller
-        if (!req.formattedFileNames) {
-            req.formattedFileNames = [];
-        }
-        req.formattedFileNames.push(formattedName);
-        cb(null, formattedName);
-    },
-});
+// Sử dụng memoryStorage thay vì diskStorage
+const storage = multer.memoryStorage();
 
-// Tạo middleware multer
+// Tạo middleware multer với memory storage
 const upload = multer({ storage });
 
-module.exports = upload;
+// Middleware để xử lý việc lưu file
+const handleFileUpload = async (req, res, next) => {
+    if (!req.files || Object.keys(req.files).length === 0) {
+        return next();
+    }
+
+    try {
+        // Tạo mảng để lưu tên file đã format
+        req.formattedFileNames = [];
+
+        // Tạo mảng để lưu thông tin file (buffer và tên)
+        req.fileBuffers = [];
+
+        // Xử lý tất cả các file
+        const allFiles = [
+            ...(req.files.thumbnail || []),
+            ...(req.files.productImages || []),
+        ];
+
+        for (const file of allFiles) {
+            const formattedName = formatImageName(file.originalname);
+            req.formattedFileNames.push(formattedName);
+            req.fileBuffers.push({
+                buffer: file.buffer,
+                fileName: formattedName,
+            });
+        }
+
+        next();
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Hàm để lưu các file vào thư mục
+const saveFiles = async (fileBuffers) => {
+    // Đảm bảo thư mục tồn tại
+    if (!fsSync.existsSync(uploadDir)) {
+        await fs.mkdir(uploadDir, { recursive: true });
+    }
+
+    // Lưu từng file
+    for (const file of fileBuffers) {
+        const filePath = path.join(uploadDir, file.fileName);
+        await fs.writeFile(filePath, file.buffer);
+    }
+};
+
+// Hàm để xóa các file đã lưu (trong trường hợp rollback)
+const deleteFiles = async (fileNames) => {
+    for (const fileName of fileNames) {
+        const filePath = path.join(uploadDir, fileName);
+        try {
+            await fs.unlink(filePath);
+        } catch (error) {
+            console.error(`Không thể xóa file ${filePath}:`, error);
+        }
+    }
+};
+
+module.exports = {
+    upload,
+    handleFileUpload,
+    saveFiles,
+    deleteFiles,
+};
