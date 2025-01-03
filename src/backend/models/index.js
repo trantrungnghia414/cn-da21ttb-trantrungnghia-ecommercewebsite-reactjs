@@ -15,6 +15,7 @@ db.Category = require('./category')(sequelize, Sequelize);
 db.MemorySize = require('./memorysize')(sequelize, Sequelize);
 db.Brand = require('./brand')(sequelize, Sequelize);
 db.Supplier = require('./supplier')(sequelize, Sequelize);
+db.User = require('./user')(sequelize, Sequelize);
 
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {

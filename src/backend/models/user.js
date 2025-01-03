@@ -1,23 +1,47 @@
-// module.exports = (sequelize, DataTypes) => {
-//     const User = sequelize.define('User', {
-//       username: {
-//         type: DataTypes.STRING,
-//         allowNull: false,
-//       },
-//       email: {
-//         type: DataTypes.STRING,
-//         allowNull: false,
-//         unique: true,
-//       },
-//       password: {
-//         type: DataTypes.STRING,
-//         allowNull: false,
-//       },
-//     });
-  
-//     User.associate = (models) => {
-//       // Define associations here
-//     };
-  
-//     return User;
-//   };
+module.exports = (sequelize, DataTypes) => {
+    const User = sequelize.define(
+        "User",
+        {
+            UserID: {
+                type: DataTypes.INTEGER,
+                primaryKey: true,
+                autoIncrement: true,
+            },
+            FullName: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            Email: {
+                type: DataTypes.STRING,
+                allowNull: false,
+                unique: true,
+            },
+            PasswordHash: {
+                type: DataTypes.STRING,
+                allowNull: false,
+            },
+            PhoneNumber: {
+                type: DataTypes.STRING,
+                allowNull: true,
+            },
+            Address: {
+                type: DataTypes.STRING,
+                allowNull: true,
+            },
+            Role: {
+                type: DataTypes.ENUM("Customer", "Admin"),
+                defaultValue: "Customer",
+            },
+            Status: {
+                type: DataTypes.STRING,
+                defaultValue: "active",
+            },
+        },
+        {
+            tableName: "users",
+            timestamps: false,
+        }
+    );
+
+    return User;
+};

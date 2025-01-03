@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { axiosClient } from '../config/axios.config';
+import { toast } from 'react-toastify';
 
 function Register() {
   const navigate = useNavigate();
@@ -7,27 +9,35 @@ function Register() {
     fullname: '',
     email: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
   });
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const validateForm = () => {
     const newErrors = {};
     if (!formData.fullname) newErrors.fullname = 'Vui lòng nhập họ tên';
-    if (!formData.email) newErrors.email = 'Vui lòng nhập email';
-    if (!formData.password) newErrors.password = 'Vui lòng nhập mật khẩu';
+    if (!formData.email) {
+      newErrors.email = 'Vui lòng nhập email';
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      newErrors.email = 'Email không hợp lệ';
+    }
+    if (!formData.password) {
+      newErrors.password = 'Vui lòng nhập mật khẩu';
+    } else if (formData.password.length < 6) {
+      newErrors.password = 'Mật khẩu phải có ít nhất 6 ký tự';
+    }
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = 'Mật khẩu không khớp';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -36,11 +46,22 @@ function Register() {
     e.preventDefault();
     if (validateForm()) {
       try {
-        // API call to register
-        console.log('Form submitted:', formData);
-        navigate('/login');
+        const response = await axiosClient.post('/api/auth/register', {
+          FullName: formData.fullname,
+          Email: formData.email,
+          Password: formData.password,
+        });
+
+        if (response.data) {
+          toast.success('Đăng ký thành công!');
+          navigate('/login');
+        }
       } catch (error) {
-        console.error('Registration error:', error);
+        if (error.response?.data?.message) {
+          toast.error(error.response.data.message);
+        } else {
+          toast.error('Đã có lỗi xảy ra khi đăng ký');
+        }
       }
     }
   };
@@ -123,7 +144,9 @@ function Register() {
                 placeholder="Nhập lại mật khẩu của bạn"
               />
               {errors.confirmPassword && (
-                <p className="mt-2 text-sm text-red-600">{errors.confirmPassword}</p>
+                <p className="mt-2 text-sm text-red-600">
+                  {errors.confirmPassword}
+                </p>
               )}
             </div>
 
@@ -140,7 +163,10 @@ function Register() {
           <div className="mt-6">
             <p className="text-center text-sm text-gray-600">
               Đã có tài khoản?{' '}
-              <Link to="/login" className="font-medium text-red-500 hover:text-red-600 transition-colors duration-200">
+              <Link
+                to="/login"
+                className="font-medium text-red-500 hover:text-red-600 transition-colors duration-200"
+              >
                 Đăng nhập
               </Link>
             </p>

@@ -1,30 +1,56 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { axiosClient } from '../config/axios.config';
+import { useAuth } from '../contexts/AuthContext';
 
 function Login() {
   const navigate = useNavigate();
+  const { login } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
-    password: ''
+    password: '',
   });
   const [error, setError] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prevState => ({
+    setFormData((prevState) => ({
       ...prevState,
-      [name]: value
+      [name]: value,
     }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // API call to login
-      console.log('Login attempt:', formData);
-      navigate('/');
+      const response = await axiosClient.post('/api/auth/login', {
+        Email: formData.email,
+        Password: formData.password,
+      });
+
+      if (response.data) {
+        // Lưu token vào localStorage
+        localStorage.setItem('token', response.data.token);
+        // Cập nhật context
+        login(response.data.user);
+        toast.success('Đăng nhập thành công!');
+
+        // Chuyển hướng dựa vào role
+        if (response.data.user.role === 'Admin') {
+          navigate('/admin/dashboard');
+        } else {
+          navigate('/');
+        }
+      }
     } catch (error) {
-      setError('Email hoặc mật khẩu không đúng');
+      if (error.response?.data?.message) {
+        toast.error(error.response.data.message);
+        setError(error.response.data.message);
+      } else {
+        toast.error('Đã có lỗi xảy ra khi đăng nhập');
+        setError('Đã có lỗi xảy ra khi đăng nhập');
+      }
       console.error('Login error:', error);
     }
   };
@@ -91,7 +117,10 @@ function Login() {
               </div>
 
               <div className="text-sm">
-                <Link to="/forgot-password" className="font-medium text-red-500 hover:text-red-600 transition-colors duration-200">
+                <Link
+                  to="/forgot-password"
+                  className="font-medium text-red-500 hover:text-red-600 transition-colors duration-200"
+                >
                   Quên mật khẩu?
                 </Link>
               </div>
@@ -110,7 +139,10 @@ function Login() {
           <div className="mt-6">
             <p className="text-center text-sm text-gray-600">
               Chưa có tài khoản?{' '}
-              <Link to="/register" className="font-medium text-red-500 hover:text-red-600 transition-colors duration-200">
+              <Link
+                to="/register"
+                className="font-medium text-red-500 hover:text-red-600 transition-colors duration-200"
+              >
                 Đăng ký ngay
               </Link>
             </p>

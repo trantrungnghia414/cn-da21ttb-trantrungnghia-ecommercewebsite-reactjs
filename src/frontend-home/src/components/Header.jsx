@@ -1,14 +1,31 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import logo from '~/assets/images/logo.png';
+import { toast } from 'react-toastify';
 
 function Header() {
+  const { user, logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      toast.success('Đăng xuất thành công!');
+    } catch (error) {
+      toast.error('Có lỗi xảy ra khi đăng xuất');
+    }
+  };
+
   return (
     <header className="bg-white shadow-md">
       <nav className="container mx-auto px-4 py-3">
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center text-2xl font-bold text-red-500">
-            <img src={logo} alt="logo" className="h-8 mr-2" />NGHIASTORE
+          <Link
+            to="/"
+            className="flex items-center text-2xl font-bold text-red-500"
+          >
+            <img src={logo} alt="logo" className="h-8 mr-2" />
+            NGHIASTORE
           </Link>
 
           <div className="hidden md:flex space-x-6">
@@ -24,15 +41,40 @@ function Header() {
           </div>
 
           <div className="flex items-center space-x-4">
-            <Link to="/login" className="text-gray-700 hover:text-red-500">
-              Đăng nhập
-            </Link>
-            <Link
-              to="/register"
-              className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
-            >
-              Đăng ký
-            </Link>
+            {user ? (
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center">
+                  <img
+                    className="h-8 w-8 rounded-full"
+                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName)}`}
+                    alt="User avatar"
+                  />
+                  <div className="ml-3">
+                    <p className="text-sm font-medium text-gray-700">
+                      {user.fullName}
+                    </p>
+                    <button
+                      onClick={handleLogout}
+                      className="text-xs text-gray-500 hover:text-red-500"
+                    >
+                      Đăng xuất
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <>
+                <Link to="/login" className="text-gray-700 hover:text-red-500">
+                  Đăng nhập
+                </Link>
+                <Link
+                  to="/register"
+                  className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                >
+                  Đăng ký
+                </Link>
+              </>
+            )}
           </div>
         </div>
       </nav>

@@ -1,5 +1,5 @@
 const express = require('express');
-// const authRoutes = require('./authRoutes');
+const authRoutes = require('./authRoutes');
 const productRoutes = require('./productRoutes');
 const categoryRoutes = require('./categoryRoutes');
 const brandRoutes = require('./brandRoutes');
@@ -12,7 +12,7 @@ const memorySizeRoutes = require('./memorySizeRoutes');
 // const promotionRoutes = require('./promotionRoutes');
 const router = express.Router();
 
-// router.use('/auth', authRoutes);
+router.use('/auth', authRoutes);
 router.use('/products', productRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/brands', brandRoutes);

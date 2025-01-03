@@ -1,3 +1,4 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const app = express();
@@ -26,6 +27,7 @@ app.use("/api/brands", require("./routes/brandRoutes"));
 app.use("/api/suppliers", require("./routes/supplierRoutes"));
 app.use("/api/categories", require("./routes/categoryRoutes"));
 app.use("/api/memorysizes", require("./routes/memorySizeRoutes"));
+app.use("/api/auth", require("./routes/authRoutes"));
 
 // Thêm error handling middleware
 app.use((err, req, res, next) => {
