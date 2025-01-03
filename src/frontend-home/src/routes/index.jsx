@@ -18,7 +18,7 @@ const routes = [
     element: <DefaultLayout><Products /></DefaultLayout>,
   },
   {
-    path: '/products/:id',
+    path: '/products/:slug',
     element: <DefaultLayout><ProductDetail /></DefaultLayout>,
   },
   {
