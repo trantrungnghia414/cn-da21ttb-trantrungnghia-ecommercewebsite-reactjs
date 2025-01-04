@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
-import { toast } from "react-toastify";
+import { toast } from "react-hot-toast";
 import { axiosAppJson } from "../../config/axios.config";
 import logo from "../../assets/images/logo.png";
 
@@ -33,6 +33,7 @@ function Login() {
             // Cập nhật trạng thái đăng nhập
             login(response.data.user);
             toast.success("Đăng nhập thành công!");
+            // console.log(response.data.user);
             navigate("/admin");
         } catch (error) {
             console.error("Login error:", error);

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import logo from '~/assets/images/logo.png';
-import { toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 
 function Header() {
   const { user, logout } = useAuth();
@@ -12,9 +12,9 @@ function Header() {
   const handleLogout = async () => {
     try {
       await logout();
-      toast.success('Đăng xuất thành công!');
+      toast.success("Đăng xuất thành công!");
     } catch (error) {
-      toast.error('Có lỗi xảy ra khi đăng xuất');
+      toast.error(error.response?.data?.message || "Có lỗi xảy ra khi đăng xuất");
     }
   };
 
@@ -48,12 +48,12 @@ function Header() {
                 <div className="flex items-center">
                   <img
                     className="h-8 w-8 rounded-full"
-                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.FullName)}`}
+                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user?.FullName || user?.fullName)}`}
                     alt="User avatar"
                   />
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-700">
-                      {user.FullName}
+                      {user?.FullName || user?.fullName}
                     </p>
                     <button
                       onClick={handleLogout}

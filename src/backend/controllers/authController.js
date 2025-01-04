@@ -107,18 +107,18 @@ exports.check = async (req, res) => {
 
     let userInToken = jwt.verify(req.body.token, process.env.JWT_SECRET);
 
-    console.log(userInToken);
+    // console.log(userInToken);
 
     let user = await db.User.findOne({ where: { UserID: userInToken.id } });
 
-    console.log(user);
+    // console.log(user);
 
     if (!user) {
         return res.status(401).json({ message: "Tài khoản không tồn tại" });
     }
 
     res.status(200).json({
-        message: "Kiem tra thanh cong",
+        message: "Kiểm tra thành công",
         data: {
             user: user,
         },

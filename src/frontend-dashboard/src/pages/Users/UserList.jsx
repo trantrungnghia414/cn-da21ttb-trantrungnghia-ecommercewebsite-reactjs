@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { axiosAppJson } from "../../config/axios.config";
-import { toast } from "react-toastify";
+import { toast } from "react-hot-toast";
 
 function UserList() {
     const [users, setUsers] = useState([]);
