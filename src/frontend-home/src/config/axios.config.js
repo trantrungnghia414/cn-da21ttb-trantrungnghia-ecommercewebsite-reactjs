@@ -10,7 +10,7 @@ export const axiosClient = axios.create({
   },
 });
 
-// Thêm interceptor để tự động gửi token
+// Request interceptor
 axiosClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -20,6 +20,31 @@ axiosClient.interceptors.request.use(
     return config;
   },
   (error) => {
+    return Promise.reject(error);
+  },
+);
+
+// Response interceptor
+axiosClient.interceptors.response.use(
+  (response) => response,
+  async (error) => {
+    const originalRequest = error.config;
+
+    if (error.response?.status === 401 && !originalRequest._retry) {
+      originalRequest._retry = true;
+      try {
+        const response = await axiosClient.get('/api/auth/check');
+        if (response.data.user && response.data.user.role === 'Customer') {
+          return axiosClient(originalRequest);
+        } else {
+          localStorage.removeItem('token');
+          // window.location.href = '/login';
+        }
+      } catch (refreshError) {
+        localStorage.removeItem('token');
+        // window.location.href = '/login';
+      }
+    }
     return Promise.reject(error);
   },
 );

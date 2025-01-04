@@ -3,10 +3,11 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import router from "./routes";
 import { Toaster } from "react-hot-toast";
+import { AuthProvider } from "./contexts/AuthContext";
 
 function App() {
     return (
-        <>
+        <AuthProvider>
             <RouterProvider router={router} />
             <Toaster position="top-right" />
             <ToastContainer
@@ -21,7 +22,7 @@ function App() {
                 pauseOnHover
                 theme="light"
             />
-        </>
+        </AuthProvider>
     );
 }
 

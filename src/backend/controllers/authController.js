@@ -2,6 +2,7 @@ const bcrypt = require("bcrypt");
 const db = require("../models");
 const jwt = require("jsonwebtoken");
 
+// Đăng ký tài khoản khách hàng
 exports.register = async (req, res) => {
     try {
         const { FullName, Email, Password } = req.body;
@@ -38,6 +39,7 @@ exports.register = async (req, res) => {
     }
 };
 
+// Đăng nhập tài khoản khách hàng
 exports.login = async (req, res) => {
     try {
         const { Email, Password } = req.body;
@@ -52,11 +54,9 @@ exports.login = async (req, res) => {
 
         // Kiểm tra tài khoản có bị khóa không
         if (!user.Status) {
-            return res
-                .status(403)
-                .json({
-                    message: "Tài khoản đã bị khóa. Vui lòng liên hệ admin.",
-                });
+            return res.status(403).json({
+                message: "Tài khoản đã bị khóa. Vui lòng liên hệ admin.",
+            });
         }
 
         // Kiểm tra password
@@ -100,4 +100,27 @@ exports.login = async (req, res) => {
         console.error("Login error:", error);
         res.status(500).json({ message: "Lỗi server" });
     }
+};
+
+// Kiểm tra trạng thái đăng nhập
+exports.check = async (req, res) => {
+
+    let userInToken = jwt.verify(req.body.token, process.env.JWT_SECRET);
+
+    console.log(userInToken);
+
+    let user = await db.User.findOne({ where: { UserID: userInToken.id } });
+
+    console.log(user);
+
+    if (!user) {
+        return res.status(401).json({ message: "Tài khoản không tồn tại" });
+    }
+
+    res.status(200).json({
+        message: "Kiem tra thanh cong",
+        data: {
+            user: user,
+        },
+    });
 };

@@ -13,6 +13,7 @@ function Login() {
   });
   const [error, setError] = useState('');
 
+  // Xử lý sự kiện thay đổi trong form
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prevState) => ({
@@ -21,6 +22,7 @@ function Login() {
     }));
   };
 
+  // Xử lý sự kiện submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {

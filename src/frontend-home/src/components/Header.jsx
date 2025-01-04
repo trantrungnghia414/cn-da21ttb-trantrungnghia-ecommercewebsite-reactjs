@@ -7,6 +7,8 @@ import { toast } from 'react-toastify';
 function Header() {
   const { user, logout } = useAuth();
 
+  console.log(user);
+
   const handleLogout = async () => {
     try {
       await logout();
@@ -46,12 +48,12 @@ function Header() {
                 <div className="flex items-center">
                   <img
                     className="h-8 w-8 rounded-full"
-                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName)}`}
+                    src={`https://ui-avatars.com/api/?name=${encodeURIComponent(user.FullName)}`}
                     alt="User avatar"
                   />
                   <div className="ml-3">
                     <p className="text-sm font-medium text-gray-700">
-                      {user.fullName}
+                      {user.FullName}
                     </p>
                     <button
                       onClick={handleLogout}

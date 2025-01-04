@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 
+// Middleware để xác thực token
 exports.authenticateToken = (req, res, next) => {
     const authHeader = req.headers["authorization"];
     const token = authHeader && authHeader.split(" ")[1];
@@ -17,6 +18,7 @@ exports.authenticateToken = (req, res, next) => {
     });
 };
 
+// Middleware để kiểm tra quyền admin
 exports.authorizeAdmin = (req, res, next) => {
     if (req.user.role !== "Admin") {
         return res.status(403).json({ message: "Không có quyền truy cập" });
@@ -24,6 +26,7 @@ exports.authorizeAdmin = (req, res, next) => {
     next();
 };
 
+// Middleware để kiểm tra trạng thái tài khoản
 exports.checkUserStatus = (req, res, next) => {
     if (!req.user.status) {
         return res.status(403).json({

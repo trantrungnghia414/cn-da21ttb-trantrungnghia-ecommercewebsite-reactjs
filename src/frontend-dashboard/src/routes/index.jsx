@@ -21,6 +21,9 @@ import SupplierForm from "~/pages/Suppliers/SupplierForm";
 import MemorySizeList from "~/pages/MemorySize/MemorySizeList";
 import MemorySizeForm from "~/pages/MemorySize/MemorySizeForm";
 
+import Login from "~/pages/Auth/Login";
+// import PrivateRoute from "./PrivateRoute";
+
 // Error Page
 const ErrorPage = () => {
     return (
@@ -41,11 +44,15 @@ const ErrorPage = () => {
 const router = createBrowserRouter([
     {
         path: "/",
-        element: <Navigate to="/admin" replace />,
+        element: <Login />,
     },
     {
         path: "/admin",
-        element: <DashboardLayout />,
+        element: (
+            // <PrivateRoute>
+                <DashboardLayout />
+            // </PrivateRoute>
+        ),
         errorElement: <ErrorPage />,
         children: [
             {
