@@ -86,3 +86,78 @@
         display: none;
     }
 }
+
+/* CSS CỦA CKEDITOR */
+
+/* Style cho phần mô tả sản phẩm */
+.product-description {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #333;
+}
+
+.product-description h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 20px 0 15px;
+    color: #111;
+}
+
+.product-description h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin: 18px 0 12px;
+    color: #222;
+}
+
+.product-description h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin: 15px 0 10px;
+    color: #333;
+}
+
+.product-description p {
+    margin-bottom: 15px;
+}
+
+.product-description ul,
+.product-description ol {
+    margin: 15px 0;
+    padding-left: 25px;
+}
+
+.product-description li {
+    margin-bottom: 8px;
+}
+
+.product-description table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+}
+
+.product-description th,
+.product-description td {
+    border: 1px solid #ddd;
+    padding: 12px;
+    text-align: left;
+}
+
+.product-description th {
+    background-color: #f5f5f5;
+    font-weight: 600;
+}
+
+.product-description tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.product-description a {
+    color: #2563eb;
+    text-decoration: none;
+}
+
+.product-description a:hover {
+    text-decoration: underline;
+}

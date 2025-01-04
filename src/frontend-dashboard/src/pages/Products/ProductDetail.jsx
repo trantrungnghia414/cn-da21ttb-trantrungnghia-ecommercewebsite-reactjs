@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { axiosAppJson } from "~/config/axios.config";
 import { formatCurrency } from "~/config/format";
+import "~/assets/styles/index.css";
 
 function ProductDetail() {
     const { slug } = useParams();

@@ -198,7 +198,7 @@ function ProductDetail() {
         {/* Thông tin sản phẩm */}
         <div className="space-y-6">
           <h1 className="text-3xl font-bold text-gray-900">{product.Name}</h1>
-          <p className="text-gray-600">{product.Description}</p>
+          {/* <p className="text-gray-600">{product.Description}</p> */}
 
           {/* Chọn dung lượng */}
           <div>
@@ -225,19 +225,25 @@ function ProductDetail() {
           {selectedVariant && (
             <div>
               <h3 className="text-lg font-semibold mb-2">Màu sắc:</h3>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 {selectedVariant.colors.map((color) => (
                   <button
                     key={color.ColorID}
                     onClick={() => handleColorChange(color)}
-                    className={`p-2 rounded-full border-2 ${
+                    className={`flex items-center gap-2 px-3 py-2 rounded-lg border-2 hover:border-red-400 transition-colors ${
                       selectedColor?.ColorID === color.ColorID
-                        ? 'border-red-500'
-                        : 'border-gray-300'
+                        ? 'border-red-500 bg-red-50'
+                        : 'border-gray-300 hover:bg-gray-50'
                     }`}
-                    style={{ backgroundColor: color.ColorCode }}
-                    title={color.ColorName}
-                  />
+                  >
+                    <span
+                      className="w-6 h-6 rounded-full border border-gray-300"
+                      style={{ backgroundColor: color.ColorCode }}
+                    />
+                    <span className="text-sm font-medium text-gray-700">
+                      {color.ColorName}
+                    </span>
+                  </button>
                 ))}
               </div>
             </div>
@@ -293,6 +299,15 @@ function ProductDetail() {
             <button className="w-full bg-red-500 text-white py-3 px-6 rounded-lg hover:bg-red-600 transition duration-300">
               Thêm vào giỏ hàng
             </button>
+          </div>
+
+          {/* Mô tả sản phẩm */}
+          <div className="mt-8 bg-white rounded-lg shadow-sm p-6">
+            <h3 className="text-xl font-semibold mb-4">Mô tả sản phẩm</h3>
+            <div
+              className="product-description"
+              dangerouslySetInnerHTML={{ __html: product.Description }}
+            />
           </div>
         </div>
       </div>

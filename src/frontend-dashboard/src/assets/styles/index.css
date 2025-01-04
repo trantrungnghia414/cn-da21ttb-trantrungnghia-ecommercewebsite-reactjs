@@ -1,0 +1,22 @@
+.ck-editor__editable {
+    min-height: 200px !important;
+    max-height: 400px !important;
+}
+
+.ck.ck-editor__main > .ck-editor__editable {
+    min-height: 200px;
+    max-height: 400px;
+    padding: 1rem;
+}
+
+.ck.ck-editor__main > .ck-editor__editable:not(.ck-focused) {
+    border-color: #d1d5db;
+}
+
+.ck.ck-toolbar {
+    border-color: #d1d5db;
+}
+
+.ck-editor__editable_inline {
+    padding: 0 1rem !important;
+}

@@ -2,6 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { axiosAppJson, axiosFromData } from "~/config/axios.config";
 import { toast } from "react-hot-toast";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import ClassicEditor from "@ckeditor/ckeditor5-build-classic";
+import "~/assets/styles/index.css";
 
 function ProductCreate() {
     const navigate = useNavigate();
@@ -247,6 +250,11 @@ function ProductCreate() {
         if (!formData.SupplierID) {
             newErrors.SupplierID = "Vui lòng chọn nhà cung cấp";
             toast.error("Vui lòng chọn nhà cung cấp");
+        }
+
+        if (!formData.Description?.trim()) {
+            newErrors.Description = "Vui lòng nhập mô tả sản phẩm";
+            toast.error("Vui lòng nhập mô tả sản phẩm");
         }
 
         // Kiểm tra trùng dung lượng trong variants
@@ -512,16 +520,47 @@ function ProductCreate() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700">
-                                    Mô tả
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Mô tả sản phẩm
                                 </label>
-                                <textarea
-                                    name="Description"
-                                    rows={3}
-                                    value={formData.Description}
-                                    onChange={handleChange}
-                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                />
+                                <div className="mt-1">
+                                    <CKEditor
+                                        editor={ClassicEditor}
+                                        data={formData.Description}
+                                        onChange={(event, editor) => {
+                                            const data = editor.getData();
+                                            setFormData((prev) => ({
+                                                ...prev,
+                                                Description: data,
+                                            }));
+                                        }}
+                                        config={{
+                                            removePlugins: ['CKFinderUploadAdapter', 'CKFinder', 'EasyImage', 'Image', 'ImageCaption', 'ImageStyle', 'ImageToolbar', 'ImageUpload', 'MediaEmbed'],
+                                            toolbar: [
+                                                'heading',
+                                                '|',
+                                                'bold',
+                                                'italic',
+                                                'link',
+                                                'bulletedList',
+                                                'numberedList',
+                                                '|',
+                                                'outdent',
+                                                'indent',
+                                                '|',
+                                                'blockQuote',
+                                                'insertTable',
+                                                'undo',
+                                                'redo'
+                                            ]
+                                        }}
+                                        onError={(error, { willEditorRestart }) => {
+                                            if (willEditorRestart) {
+                                                console.log('Editor will restart');
+                                            }
+                                        }}
+                                    />
+                                </div>
                             </div>
 
                             <div>
