@@ -104,7 +104,6 @@ exports.login = async (req, res) => {
 
 // Kiểm tra trạng thái đăng nhập
 exports.check = async (req, res) => {
-
     let userInToken = jwt.verify(req.body.token, process.env.JWT_SECRET);
 
     // console.log(userInToken);

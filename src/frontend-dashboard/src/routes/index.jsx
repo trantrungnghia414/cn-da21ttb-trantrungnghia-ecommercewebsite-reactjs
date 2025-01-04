@@ -1,4 +1,4 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import DashboardLayout from "../layout/DashboardLayout";
 
 // Pages
@@ -22,7 +22,7 @@ import MemorySizeList from "~/pages/MemorySize/MemorySizeList";
 import MemorySizeForm from "~/pages/MemorySize/MemorySizeForm";
 
 import Login from "~/pages/Auth/Login";
-// import PrivateRoute from "./PrivateRoute";
+import PrivateRoute from "./PrivateRoute";
 
 // Error Page
 const ErrorPage = () => {
@@ -49,14 +49,14 @@ const router = createBrowserRouter([
     {
         path: "/admin",
         element: (
-            // <PrivateRoute>
+            <PrivateRoute>
                 <DashboardLayout />
-            // </PrivateRoute>
+            </PrivateRoute>
         ),
         errorElement: <ErrorPage />,
         children: [
             {
-                path: "",
+                index: true,
                 element: <Home />,
             },
             // Products

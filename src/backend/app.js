@@ -29,6 +29,7 @@ app.use("/api/categories", require("./routes/categoryRoutes"));
 app.use("/api/memorysizes", require("./routes/memorySizeRoutes"));
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
+
 // Thêm error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);

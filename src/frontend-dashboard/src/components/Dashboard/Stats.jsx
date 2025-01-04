@@ -1,17 +1,41 @@
+import { useState, useEffect } from "react";
 import {
     CurrencyDollarIcon,
     ShoppingCartIcon,
     UserGroupIcon,
     CubeIcon,
 } from "@heroicons/react/24/outline";
+import { axiosAppJson } from "~/config/axios.config";
 
 function Stats() {
-    // Dữ liệu mẫu
+    const [statsData, setStatsData] = useState({
+        totalRevenue: 0,
+        totalOrders: 0,
+        totalCustomers: 0,
+        totalProducts: 0,
+    });
+
+    useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const response = await axiosAppJson.get("/api/stats");
+                setStatsData(response.data);
+            } catch (error) {
+                console.error("Error fetching stats:", error);
+            }
+        };
+
+        fetchStats();
+    }, []);
+
     const stats = [
         {
             id: 1,
             name: "Tổng doanh thu",
-            value: "0đ",
+            value: new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+            }).format(statsData.totalRevenue || 0),
             icon: CurrencyDollarIcon,
             change: "+0%",
             changeType: "increase",
@@ -19,7 +43,7 @@ function Stats() {
         {
             id: 2,
             name: "Đơn hàng",
-            value: "0",
+            value: statsData.totalOrders || 0,
             icon: ShoppingCartIcon,
             change: "+0%",
             changeType: "increase",
@@ -27,7 +51,7 @@ function Stats() {
         {
             id: 3,
             name: "Khách hàng",
-            value: "0",
+            value: statsData.totalCustomers || 0,
             icon: UserGroupIcon,
             change: "+0%",
             changeType: "increase",
@@ -35,7 +59,7 @@ function Stats() {
         {
             id: 4,
             name: "Sản phẩm",
-            value: "0",
+            value: statsData.totalProducts || 0,
             icon: CubeIcon,
             change: "+0%",
             changeType: "increase",

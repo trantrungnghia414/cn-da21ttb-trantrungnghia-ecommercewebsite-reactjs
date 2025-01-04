@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../contexts/AuthContext";
 import { toast } from "react-hot-toast";
@@ -13,6 +13,13 @@ function Login() {
         email: "",
         password: "",
     });
+    const { user } = useAuth();
+
+    useEffect(() => {
+        if (user && user.Role === "Admin") {
+            navigate("/admin");
+        }
+    }, [user, navigate]);
 
     // Xử lý đăng nhập
     const handleSubmit = async (e) => {
@@ -35,6 +42,7 @@ function Login() {
             toast.success("Đăng nhập thành công!");
             // console.log(response.data.user);
             navigate("/admin");
+            window.location.reload();
         } catch (error) {
             console.error("Login error:", error);
             toast.error(error.response?.data?.message || "Đăng nhập thất bại!");

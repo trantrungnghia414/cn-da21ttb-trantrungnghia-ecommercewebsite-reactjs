@@ -32,16 +32,19 @@ function Login() {
       });
 
       if (response.data) {
-        // Lưu token vào localStorage
-        localStorage.setItem('token', response.data.token);
-        // Cập nhật context
-        login(response.data.user);
-        toast.success('Đăng nhập thành công!');
-
-        // Chuyển hướng dựa vào role
+        // Kiểm tra trạng thái tài khoản
+        if (response.data.user.status === "inactive") {
+          toast.error('Tài khoản của bạn đã bị khóa. Vui lòng liên hệ admin.');
+          return;
+        }
+        // Kiểm tra role
         if (response.data.user.role === 'Admin') {
           navigate('/admin/dashboard');
         } else {
+          // Lưu token và cập nhật context
+          localStorage.setItem('token', response.data.token);
+          login(response.data.user);
+          toast.success('Đăng nhập thành công!');
           navigate('/');
         }
       }

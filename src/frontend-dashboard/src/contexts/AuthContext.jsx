@@ -22,7 +22,10 @@ export function AuthProvider({ children }) {
 
                 console.log(response.data.data.user);
 
-                if (response.data.data.user && response.data.data.user.Role === "Admin") {
+                if (
+                    response.data.data.user &&
+                    response.data.data.user.Role === "Admin"
+                ) {
                     setUser(response.data.data.user);
                 }
             } catch (error) {

@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { axiosClient } from '../config/axios.config';
+import toast from 'react-hot-toast';
 
 const AuthContext = createContext();
 
@@ -8,10 +9,12 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  console.log(user);  
+  console.log(user);
 
   // Kiểm tra trạng thái đăng nhập
   useEffect(() => {
+    let isSubscribed = true; // Để tránh memory leak
+
     const checkAuth = async () => {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -24,21 +27,39 @@ export function AuthProvider({ children }) {
           token,
         });
 
-        console.log(response.data.data.user);
+        const userData = response.data.data.user;
 
-        if (response.data.data.user.Role === 'Customer') {
-          setUser(response.data.data.user);
+        if (!isSubscribed) return;
+
+        if (userData.Role === 'Customer' && userData.Status === 'active') {
+          setUser(userData);
+        } else {
+          localStorage.removeItem('token');
+          setUser(null);
+          if (userData.Status === 'inactive') {
+            toast.error(
+              'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ admin.',
+            );
+          }
         }
       } catch (error) {
         console.error('Check auth error:', error);
-        // localStorage.removeItem('token');
+        localStorage.removeItem('token');
+        setUser(null);
       } finally {
-        setLoading(false);
+        if (isSubscribed) {
+          setLoading(false);
+        }
       }
     };
 
     checkAuth();
-  }, []);
+
+    // Cleanup function
+    return () => {
+      isSubscribed = false;
+    };
+  }, []); // Empty dependency array - chỉ chạy một lần khi mount
 
   // Đăng nhập
   const login = (userData) => {
