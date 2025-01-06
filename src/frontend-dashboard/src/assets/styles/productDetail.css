@@ -1,0 +1,94 @@
+/* Style cho nội dung mô tả sản phẩm */
+.description-content {
+    /* Layout */
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: #f8fafc;
+
+    /* Typography */
+    line-height: 1.6;
+    color: #334155;
+
+    /* Spacing cho các elements */
+    & h1, & h2, & h3, & h4, & h5, & h6 {
+        margin-top: 1.5em;
+        margin-bottom: 0.5em;
+        font-weight: 600;
+        color: #1e293b;
+    }
+
+    & p {
+        margin-bottom: 1em;
+    }
+
+    /* Lists */
+    & ul, & ol {
+        margin: 1em 0;
+        padding-left: 1.5em;
+    }
+
+    & li {
+        margin: 0.5em 0;
+    }
+
+    /* Tables */
+    & table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1em 0;
+    }
+
+    & th, & td {
+        border: 1px solid #e2e8f0;
+        padding: 0.75rem;
+        text-align: left;
+    }
+
+    & th {
+        background-color: #f1f5f9;
+        font-weight: 600;
+    }
+
+    /* Links */
+    & a {
+        color: #2563eb;
+        text-decoration: none;
+        
+        &:hover {
+            text-decoration: underline;
+        }
+    }
+
+    /* Images */
+    & img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 0.375rem;
+        margin: 1em 0;
+    }
+
+    /* Blockquotes */
+    & blockquote {
+        border-left: 4px solid #e2e8f0;
+        padding-left: 1rem;
+        margin: 1em 0;
+        color: #64748b;
+        font-style: italic;
+    }
+
+    /* Code blocks */
+    & pre {
+        background-color: #1e293b;
+        color: #f8fafc;
+        padding: 1rem;
+        border-radius: 0.375rem;
+        overflow-x: auto;
+    }
+
+    & code {
+        background-color: #f1f5f9;
+        padding: 0.2em 0.4em;
+        border-radius: 0.25rem;
+        font-size: 0.875em;
+    }
+}

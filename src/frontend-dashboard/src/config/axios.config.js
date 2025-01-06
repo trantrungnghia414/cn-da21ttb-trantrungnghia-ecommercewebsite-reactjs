@@ -1,4 +1,5 @@
 import axios from "axios";
+import { toast } from "react-hot-toast";
 
 // Tạo axios instance cho các request JSON (để gửi dữ liệu dạng JSON)
 const axiosAppJson = axios.create({
@@ -36,25 +37,35 @@ axiosAppJson.interceptors.request.use(
     }
 );
 
-// Response interceptor cho các request JSON (để kiểm tra token và quyền truy cập)
+// Response interceptor cho các request JSON
 axiosAppJson.interceptors.response.use(
     (response) => response,
     async (error) => {
         const originalRequest = error.config;
 
-        if (error.response?.status === 401 && !originalRequest._retry) {
+        // Nếu lỗi 401 (Unauthorized) hoặc 403 (Forbidden)
+        if (
+            (error.response?.status === 401 ||
+                error.response?.status === 403) &&
+            !originalRequest._retry
+        ) {
             originalRequest._retry = true;
             try {
-                const response = await axiosAppJson.get("/api/auth/check");
-                if (response.data.user && response.data.user.role === "Admin") {
-                    return axiosAppJson(originalRequest);
-                } else {
-                    localStorage.removeItem("token");
-                    // window.location.href = "/";
-                }
-            } catch (refreshError) {
+                // Xóa token cũ
                 localStorage.removeItem("token");
-                // window.location.href = "/";
+
+                // Chuyển về trang login
+                window.location.href = "/";
+
+                // Hiển thị thông báo
+                toast.error(
+                    "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!"
+                );
+
+                return Promise.reject(error);
+            } catch (refreshError) {
+                console.error("Refresh error:", refreshError);
+                return Promise.reject(refreshError);
             }
         }
         return Promise.reject(error);

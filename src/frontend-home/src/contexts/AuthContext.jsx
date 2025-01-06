@@ -13,6 +13,7 @@ export function AuthProvider({ children }) {
 
   // Kiểm tra trạng thái đăng nhập
   useEffect(() => {
+    let interval;
     let isSubscribed = true; // Để tránh memory leak
 
     const checkAuth = async () => {
@@ -55,8 +56,11 @@ export function AuthProvider({ children }) {
 
     checkAuth();
 
+    interval = setInterval(checkAuth, 24 * 60 * 60 * 1000); // thời gian sống của token 1 ngày
+    
     // Cleanup function
     return () => {
+      clearInterval(interval);
       isSubscribed = false;
     };
   }, []); // Empty dependency array - chỉ chạy một lần khi mount

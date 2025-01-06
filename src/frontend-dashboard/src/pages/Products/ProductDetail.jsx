@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { axiosAppJson } from "~/config/axios.config";
 import { formatCurrency } from "~/config/format";
-import "~/assets/styles/index.css";
+import "~/assets/styles/productDetail.css";
 
 function ProductDetail() {
     const { slug } = useParams();
@@ -109,12 +109,14 @@ function ProductDetail() {
                             <dt className="text-sm font-medium text-gray-500">
                                 Mô tả và Thông số kỹ thuật
                             </dt>
-                            <dd
-                                className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2"
-                                dangerouslySetInnerHTML={{
-                                    __html: product.Description,
-                                }}
-                            />
+                            <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                                <div
+                                    className="prose prose-sm max-w-none description-content"
+                                    dangerouslySetInnerHTML={{
+                                        __html: product.Description,
+                                    }}
+                                />
+                            </dd>
                         </div>
                     </dl>
                 </div>
@@ -169,7 +171,7 @@ function ProductDetail() {
                                             <p className="text-sm text-gray-500 mt-2">
                                                 Số lượng: {color.Stock}
                                             </p>
-                                            <div className="mt-4 grid grid-cols-8 gap-4">
+                                            <div className="mt-4 grid grid-cols-10 gap-2">
                                                 {color.images?.map((image) => (
                                                     <div
                                                         key={image.ImageID}

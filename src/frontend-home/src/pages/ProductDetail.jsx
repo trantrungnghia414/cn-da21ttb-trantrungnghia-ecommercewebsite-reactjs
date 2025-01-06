@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { axiosClient } from '../config/axios.config';
 import { formatCurrency } from '~/utils/format';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -10,6 +10,8 @@ import 'swiper/css/navigation';
 import 'swiper/css/thumbs';
 import '~/assets/styles/index.css';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
+import { toast } from 'react-hot-toast';
 
 function ProductDetail() {
   const { slug } = useParams();
@@ -21,6 +23,9 @@ function ProductDetail() {
   const [thumbsSwiper, setThumbsSwiper] = useState(null);
   const mainSwiperRef = useRef(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const [quantity, setQuantity] = useState(1);
 
   useEffect(() => {
     // Scroll lên đầu trang khi component mount
@@ -91,6 +96,29 @@ function ProductDetail() {
     if (mainSwiperRef.current?.swiper) {
       mainSwiperRef.current.swiper.slideTo(0);
     }
+  };
+
+  const handleQuantityChange = (value) => {
+    const newQuantity = quantity + value;
+    if (newQuantity >= 1 && newQuantity <= selectedColor?.Stock) {
+      setQuantity(newQuantity);
+    }
+  };
+
+  const handleAddToCart = () => {
+    if (!user) {
+      toast.error('Vui lòng đăng nhập để thêm vào giỏ hàng!');
+      navigate('/login');
+      return;
+    }
+
+    if (!selectedVariant || !selectedColor) {
+      toast.error('Vui lòng chọn đầy đủ thông tin sản phẩm!');
+      return;
+    }
+
+    // Xử lý thêm vào giỏ hàng ở đây
+    toast.success('Đã thêm vào giỏ hàng!');
   };
 
   if (loading) {
@@ -291,13 +319,97 @@ function ProductDetail() {
             </div>
           </div>
 
-          {/* Giá và nút mua */}
-          <div className="space-y-4">
+          {/* Phần chọn số lượng - chỉ hiển thị khi đã đăng nhập */}
+          {user && selectedColor?.Stock > 0 && (
+            <div className="mt-4">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Số lượng:
+              </label>
+              <div className="flex items-center space-x-3">
+                <button
+                  onClick={() => handleQuantityChange(-1)}
+                  disabled={quantity <= 1}
+                  className={`p-2 rounded-md ${
+                    quantity <= 1
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  }`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+
+                <span className="w-16 text-center border border-gray-300 rounded-md py-2">
+                  {quantity}
+                </span>
+
+                <button
+                  onClick={() => handleQuantityChange(1)}
+                  disabled={quantity >= selectedColor?.Stock}
+                  className={`p-2 rounded-md ${
+                    quantity >= selectedColor?.Stock
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
+                  }`}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </button>
+
+                <span className="text-sm text-gray-500">
+                  Còn {selectedColor?.Stock} sản phẩm
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Giá và nút thêm vào giỏ */}
+          <div className="space-y-4 mt-6">
             <p className="text-2xl font-bold text-red-500">
               {formatCurrency(selectedVariant?.Price)}
             </p>
-            <button className="w-full bg-red-500 text-white py-3 px-6 rounded-lg hover:bg-red-600 transition duration-300">
-              Thêm vào giỏ hàng
+            <button
+              onClick={handleAddToCart}
+              disabled={!selectedColor || selectedColor.Stock === 0}
+              className={`w-full flex items-center justify-center gap-2 py-3 px-6 rounded-lg text-white transition duration-300 ${
+                !selectedColor || selectedColor.Stock === 0
+                  ? 'bg-gray-400 cursor-not-allowed'
+                  : 'bg-red-500 hover:bg-red-600'
+              }`}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
+              </svg>
+              {!selectedColor
+                ? 'Vui lòng chọn phiên bản'
+                : selectedColor.Stock === 0
+                  ? 'Hết hàng'
+                  : 'Thêm vào giỏ hàng'}
             </button>
           </div>
 

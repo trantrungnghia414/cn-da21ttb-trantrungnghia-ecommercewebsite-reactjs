@@ -82,7 +82,7 @@ exports.login = async (req, res) => {
                 status: user.Status,
             },
             process.env.JWT_SECRET,
-            { expiresIn: "24h" }
+            { expiresIn: "23h" } // thời gian sống của token 1 ngày
         );
 
         res.status(200).json({
@@ -104,22 +104,30 @@ exports.login = async (req, res) => {
 
 // Kiểm tra trạng thái đăng nhập
 exports.check = async (req, res) => {
-    let userInToken = jwt.verify(req.body.token, process.env.JWT_SECRET);
+    try {
+        let userInToken = jwt.verify(req.body.token, process.env.JWT_SECRET);
 
-    // console.log(userInToken);
+        // console.log(userInToken);
 
-    let user = await db.User.findOne({ where: { UserID: userInToken.id } });
+        let user = await db.User.findOne({ where: { UserID: userInToken.id } });
 
-    // console.log(user);
+        // console.log(user);
 
-    if (!user) {
-        return res.status(401).json({ message: "Tài khoản không tồn tại" });
+        if (!user) {
+            return res.status(401).json({ message: "Tài khoản không tồn tại" });
+        }
+
+        res.status(200).json({
+            message: "Kiểm tra thành công",
+            data: {
+                user: user,
+            },
+        });
+    } catch (error) {
+        if (error.name === "TokenExpiredError") {
+            return res.status(401).json({expired: true });
+        }
+        console.error("Check error:", error);
+        return res.status(401).json({error: error.message });
     }
-
-    res.status(200).json({
-        message: "Kiểm tra thành công",
-        data: {
-            user: user,
-        },
-    });
 };

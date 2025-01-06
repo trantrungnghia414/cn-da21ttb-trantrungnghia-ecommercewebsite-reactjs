@@ -374,14 +374,14 @@ function ProductCreate() {
                             colorIndex + 1
                         }: Vui lòng thêm ít nhất một ảnh`
                     );
-                } else if (color.Images.length > 8) {
+                } else if (color.Images.length > 10) {
                     newErrors[
                         `variant${variantIndex}color${colorIndex}Images`
-                    ] = "Không được thêm quá 8 ảnh cho một màu";
+                    ] = "Không được thêm quá 10 ảnh cho một màu";
                     toast.error(
                         `Biến thể ${variantIndex + 1}, Màu ${
                             colorIndex + 1
-                        }: Không được thêm quá 8 ảnh cho một màu`
+                        }: Không được thêm quá 10 ảnh cho một màu`
                     );
                 }
             });
@@ -884,7 +884,7 @@ function ProductCreate() {
                                                             }
                                                             className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                                                         />
-                                                        <div className="mt-2 grid grid-cols-4 gap-2">
+                                                        <div className="mt-2 grid grid-cols-10 gap-2">
                                                             {color.Images.map(
                                                                 (
                                                                     image,
@@ -904,7 +904,7 @@ function ProductCreate() {
                                                                                 imageIndex +
                                                                                 1
                                                                             }`}
-                                                                            className="h-20 w-20 object-cover rounded-lg"
+                                                                            className="h-20 w-20 object-cover rounded-lg border"
                                                                         />
                                                                         <button
                                                                             type="button"
@@ -915,7 +915,7 @@ function ProductCreate() {
                                                                                     imageIndex
                                                                                 )
                                                                             }
-                                                                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                                                                            className="absolute -top-2 right-4 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
                                                                         >
                                                                             <svg
                                                                                 className="h-4 w-4"

@@ -1,13 +1,29 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { PlusIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, FunnelIcon } from "@heroicons/react/24/outline";
 import { axiosAppJson } from "~/config/axios.config";
 import { toast } from "react-hot-toast";
 
 function MemorySizeList() {
     const [memorySizes, setMemorySizes] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [filters, setFilters] = useState({
+        search: "",
+        category: "all",
+    });
+    const [categories, setCategories] = useState([]);
 
+    // Fetch categories
+    const fetchCategories = async () => {
+        try {
+            const response = await axiosAppJson.get("/api/categories");
+            setCategories(response.data);
+        } catch (error) {
+            console.error("Lỗi khi lấy danh sách danh mục:", error);
+        }
+    };
+
+    // Fetch memory sizes
     const fetchMemorySizes = async () => {
         try {
             const response = await axiosAppJson.get("/api/memorysizes");
@@ -22,7 +38,19 @@ function MemorySizeList() {
 
     useEffect(() => {
         fetchMemorySizes();
+        fetchCategories();
     }, []);
+
+    // Lọc dữ liệu
+    const filteredMemorySizes = memorySizes.filter((memorySize) => {
+        const matchesSearch = memorySize.MemorySize.toLowerCase().includes(
+            filters.search.toLowerCase()
+        );
+        const matchesCategory =
+            filters.category === "all" ||
+            memorySize.CategoryID === parseInt(filters.category);
+        return matchesSearch && matchesCategory;
+    });
 
     const handleDelete = async (id) => {
         if (window.confirm("Bạn có chắc chắn muốn xóa dung lượng này không?")) {
@@ -55,6 +83,33 @@ function MemorySizeList() {
                         <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
                         Thêm dung lượng
                     </Link>
+                </div>
+            </div>
+
+            <div className="mt-4 flex justify-end">
+                <div className="w-1/6">
+                    <label htmlFor="category" className="sr-only">
+                        Danh mục
+                    </label>
+                    <select
+                        id="category"
+                        name="category"
+                        className="block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 sm:text-sm h-10 px-2"
+                        value={filters.category}
+                        onChange={(e) =>
+                            setFilters({ ...filters, category: e.target.value })
+                        }
+                    >
+                        <option value="all">Tất cả danh mục</option>
+                        {categories.map((category) => (
+                            <option
+                                key={category.CategoryID}
+                                value={category.CategoryID}
+                            >
+                                {category.Name}
+                            </option>
+                        ))}
+                    </select>
                 </div>
             </div>
 
@@ -94,44 +149,51 @@ function MemorySizeList() {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-gray-200 bg-white">
-                                        {memorySizes.map((memorySize) => (
-                                            <tr
-                                                key={memorySize.MemorySizeID}
-                                                className="hover:bg-gray-50"
-                                            >
-                                                <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
-                                                    {memorySize.MemorySize}
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                    {memorySize.Category?.Name}
-                                                </td>
-                                                <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
-                                                    {new Date(
-                                                        memorySize.CreatedAt
-                                                    ).toLocaleDateString(
-                                                        "vi-VN"
-                                                    )}
-                                                </td>
-                                                <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                                                    <Link
-                                                        to={`/admin/memorysizes/edit/${memorySize.MemorySizeID}`}
-                                                        className="text-blue-600 hover:text-blue-900 mr-4"
-                                                    >
-                                                        Sửa
-                                                    </Link>
-                                                    <button
-                                                        onClick={() =>
-                                                            handleDelete(
-                                                                memorySize.MemorySizeID
-                                                            )
+                                        {filteredMemorySizes.map(
+                                            (memorySize) => (
+                                                <tr
+                                                    key={
+                                                        memorySize.MemorySizeID
+                                                    }
+                                                    className="hover:bg-gray-50"
+                                                >
+                                                    <td className="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6">
+                                                        {memorySize.MemorySize}
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        {
+                                                            memorySize.Category
+                                                                ?.Name
                                                         }
-                                                        className="text-red-600 hover:text-red-900"
-                                                    >
-                                                        Xóa
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        ))}
+                                                    </td>
+                                                    <td className="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                                                        {new Date(
+                                                            memorySize.CreatedAt
+                                                        ).toLocaleDateString(
+                                                            "vi-VN"
+                                                        )}
+                                                    </td>
+                                                    <td className="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                                                        <Link
+                                                            to={`/admin/memorysizes/edit/${memorySize.MemorySizeID}`}
+                                                            className="text-blue-600 hover:text-blue-900 mr-4"
+                                                        >
+                                                            Sửa
+                                                        </Link>
+                                                        <button
+                                                            onClick={() =>
+                                                                handleDelete(
+                                                                    memorySize.MemorySizeID
+                                                                )
+                                                            }
+                                                            className="text-red-600 hover:text-red-900"
+                                                        >
+                                                            Xóa
+                                                        </button>
+                                                    </td>
+                                                </tr>
+                                            )
+                                        )}
                                     </tbody>
                                 </table>
                             </div>

@@ -39,7 +39,8 @@ function Login() {
         }
         // Kiểm tra role
         if (response.data.user.role === 'Admin') {
-          navigate('/admin/dashboard');
+          // navigate('/admin/dashboard');
+          toast.error('Tài khoản của bạn không có quyền truy cập');
         } else {
           // Lưu token và cập nhật context
           localStorage.setItem('token', response.data.token);

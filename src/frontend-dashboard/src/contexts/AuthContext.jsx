@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { axiosAppJson } from "../config/axios.config";
+// import { toast } from "react-hot-toast";
 
 const AuthContext = createContext();
 
@@ -8,6 +9,7 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        let interval;
         const checkAuth = async () => {
             const token = localStorage.getItem("token");
             if (!token) {
@@ -30,12 +32,17 @@ export function AuthProvider({ children }) {
                 }
             } catch (error) {
                 console.error("Check auth error:", error);
+                localStorage.removeItem("token");
+                setUser(null);
             } finally {
                 setLoading(false);
             }
         };
-
         checkAuth();
+
+        interval = setInterval(checkAuth, 24 * 60 * 60 * 1000); // Thời gian sống của token 1 ngày
+        return () => clearInterval(interval);
+
     }, []);
 
     const login = (userData) => {

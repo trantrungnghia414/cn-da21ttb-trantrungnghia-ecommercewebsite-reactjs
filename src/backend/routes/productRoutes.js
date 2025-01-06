@@ -12,7 +12,7 @@ const { upload, handleFileUpload } = require("../middlewares/multer");
 // Cấu hình multer để xử lý cả thumbnail và product images
 const uploadFields = upload.fields([
     { name: "thumbnail", maxCount: 1 },
-    { name: "productImages", maxCount: 50 },
+    { name: "productImages", maxCount: 51 },
 ]);
 
 // Route to create a product with images
