@@ -47,15 +47,8 @@ exports.login = async (req, res) => {
         // Tìm user theo email
         const user = await db.User.findOne({ where: { Email } });
         if (!user) {
-            return res
-                .status(401)
-                .json({ message: "Email hoặc mật khẩu không đúng" });
-        }
-
-        // Kiểm tra tài khoản có bị khóa không
-        if (!user.Status) {
-            return res.status(403).json({
-                message: "Tài khoản đã bị khóa. Vui lòng liên hệ admin.",
+            return res.status(401).json({
+                message: "Email hoặc mật khẩu không đúng",
             });
         }
 
@@ -65,9 +58,16 @@ exports.login = async (req, res) => {
             user.PasswordHash
         );
         if (!isValidPassword) {
-            return res
-                .status(401)
-                .json({ message: "Email hoặc mật khẩu không đúng" });
+            return res.status(401).json({
+                message: "Email hoặc mật khẩu không đúng",
+            });
+        }
+
+        // Kiểm tra tài khoản có bị khóa không
+        if (user.Status !== "active") {
+            return res.status(403).json({
+                message: "Tài khoản đã bị khóa. Vui lòng liên hệ admin.",
+            });
         }
 
         // Cập nhật LastLogin
@@ -82,7 +82,7 @@ exports.login = async (req, res) => {
                 status: user.Status,
             },
             process.env.JWT_SECRET,
-            { expiresIn: "23h" } // thời gian sống của token 1 ngày
+            { expiresIn: "23h" }
         );
 
         res.status(200).json({
@@ -98,7 +98,7 @@ exports.login = async (req, res) => {
         });
     } catch (error) {
         console.error("Login error:", error);
-        res.status(500).json({ message: "Lỗi server" });
+        return res.status(500).json({ message: "Lỗi server" });
     }
 };
 
@@ -125,9 +125,9 @@ exports.check = async (req, res) => {
         });
     } catch (error) {
         if (error.name === "TokenExpiredError") {
-            return res.status(401).json({expired: true });
+            return res.status(401).json({ expired: true });
         }
         console.error("Check error:", error);
-        return res.status(401).json({error: error.message });
+        return res.status(401).json({ error: error.message });
     }
 };

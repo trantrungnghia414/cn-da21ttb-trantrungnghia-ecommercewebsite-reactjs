@@ -9,36 +9,22 @@ function Cart() {
       name: 'iPhone 13 Pro',
       price: 28990000,
       quantity: 1,
-      image: 'https://itnstore.com/thumbs/385x385x2/upload/product/iphone-16-pro-max-titan-trang-8658.png'
+      image: 'http://localhost:5000/assets/image/products/c03c5bac554c54e39934c2a20e1f775c-2330404927.png'
     },
     {
       id: 2, 
       name: 'MacBook Air M1',
       price: 24990000,
       quantity: 3,
-      image: 'https://itnstore.com/thumbs/385x385x2/upload/product/iphone-16-pro-max-titan-trang-8658.png'
+      image: 'http://localhost:5000/assets/image/products/40ef2182a291e09b359088e1be603442-9726598527.png'
     },
     {
       id: 3,
       name: 'Apple Watch Series 6',
       price: 14990000,
       quantity: 2,
-      image: 'https://itnstore.com/thumbs/385x385x2/upload/product/iphone-16-pro-max-titan-trang-8658.png'
+      image: 'http://localhost:5000/assets/image/products/95460aaf588b60f7495dc7db664e8a80-3145465819.png'
     },
-    {
-      id: 4,
-      name: 'Apple Watch Series 6',
-      price: 14990000,
-      quantity: 4,
-      image: 'https://itnstore.com/thumbs/385x385x2/upload/product/iphone-16-pro-max-titan-trang-8658.png'
-    },
-    {
-      id: 5,
-      name: 'Apple Watch Series 6',
-      price: 14990000,
-      quantity: 3,
-      image: 'https://itnstore.com/thumbs/385x385x2/upload/product/iphone-16-pro-max-titan-trang-8658.png'
-    }
   ];
 
   const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -66,7 +52,7 @@ function Cart() {
                 key={item.id}
                 className="flex items-center gap-4 bg-white p-4 rounded-lg shadow-md mb-4"
               >
-                <div className="w-24 h-24 bg-gray-200 rounded-md"><img src={item.image} alt={item.name} /></div>
+                <div className="w-24 h-24 rounded-md"><img src={item.image} alt={item.name} /></div>
                 <div className="flex-grow">
                   <h3 className="text-lg font-medium text-gray-800">{item.name}</h3>
                   <p className="text-red-500 font-semibold">

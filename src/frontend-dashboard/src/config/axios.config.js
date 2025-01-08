@@ -4,7 +4,7 @@ import { toast } from "react-hot-toast";
 // Tạo axios instance cho các request JSON (để gửi dữ liệu dạng JSON)
 const axiosAppJson = axios.create({
     baseURL: process.env.REACT_APP_DOMAIN_SERVER_API || "http://localhost:5000",
-    timeout: 30000,
+    timeout: 10000,
     withCredentials: true,
     headers: {
         "Content-Type": "application/json",
@@ -43,6 +43,11 @@ axiosAppJson.interceptors.response.use(
     async (error) => {
         const originalRequest = error.config;
 
+        // Bỏ qua việc hiển thị thông báo cho route đăng nhập
+        if (originalRequest.url === "/api/auth/login") {
+            return Promise.reject(error);
+        }
+
         // Nếu lỗi 401 (Unauthorized) hoặc 403 (Forbidden)
         if (
             (error.response?.status === 401 ||
@@ -50,26 +55,17 @@ axiosAppJson.interceptors.response.use(
             !originalRequest._retry
         ) {
             originalRequest._retry = true;
-            try {
-                // Xóa token cũ
-                localStorage.removeItem("token");
 
-                // Chuyển về trang login
-                window.location.href = "/";
+            // Xóa token cũ
+            localStorage.removeItem("token");
 
-                // Hiển thị thông báo
-                toast.error(
-                    "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!"
-                );
+            // Chuyển về trang login
+            window.location.href = "/";
 
-                return Promise.reject(error);
-            } catch (refreshError) {
-                console.error("Refresh error:", refreshError);
-                return Promise.reject(refreshError);
-            }
+            // Hiển thị thông báo
+            toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
         }
         return Promise.reject(error);
     }
 );
-
 export { axiosAppJson, axiosFromData };

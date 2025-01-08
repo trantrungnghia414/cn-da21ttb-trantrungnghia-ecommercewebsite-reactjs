@@ -30,22 +30,38 @@ function Login() {
                 Password: formData.password,
             });
 
+            console.log("Response data:", response.data); // Debug
+
+            // Kiểm tra role Admin (phải dùng role thường vì server trả về role)
             if (response.data.user.role !== "Admin") {
                 toast.error("Bạn không có quyền truy cập trang quản trị");
                 return;
             }
 
-            // Lưu token vào localStorage
+            // Chuyển đổi role thành Role trước khi lưu vào context
+            const userData = {
+                ...response.data.user,
+                Role: response.data.user.role, // Chuyển đổi key từ role sang Role
+            };
+
+            // Lưu token và thông tin user
             localStorage.setItem("token", response.data.token);
-            // Cập nhật trạng thái đăng nhập
-            login(response.data.user);
+            await login(userData);
             toast.success("Đăng nhập thành công!");
-            // console.log(response.data.user);
             navigate("/admin");
-            window.location.reload();
         } catch (error) {
-            console.error("Login error:", error);
-            toast.error(error.response?.data?.message || "Đăng nhập thất bại!");
+            // Xóa token nếu có lỗi
+            localStorage.removeItem("token");
+
+            if (error.response?.data?.message) {
+                toast.error(error.response.data.message);
+            } else if (error.code === "ECONNABORTED") {
+                toast.error(
+                    "Không thể kết nối đến server. Vui lòng thử lại sau."
+                );
+            } else {
+                toast.error("Đã có lỗi xảy ra. Vui lòng thử lại.");
+            }
         }
     };
 

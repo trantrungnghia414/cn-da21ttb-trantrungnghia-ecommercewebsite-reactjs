@@ -8,8 +8,22 @@ export function AuthProvider({ children }) {
     const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
 
+    const login = async (userData) => {
+        try {
+            return new Promise((resolve) => {
+                if (!userData) {
+                    throw new Error("Dữ liệu người dùng không hợp lệ");
+                }
+                setUser(userData);
+                resolve();
+            });
+        } catch (error) {
+            console.error("Login error in AuthContext:", error);
+            throw error;
+        }
+    };
+
     useEffect(() => {
-        let interval;
         const checkAuth = async () => {
             const token = localStorage.getItem("token");
             if (!token) {
@@ -22,8 +36,6 @@ export function AuthProvider({ children }) {
                     token,
                 });
 
-                console.log(response.data.data.user);
-
                 if (
                     response.data.data.user &&
                     response.data.data.user.Role === "Admin"
@@ -31,7 +43,6 @@ export function AuthProvider({ children }) {
                     setUser(response.data.data.user);
                 }
             } catch (error) {
-                console.error("Check auth error:", error);
                 localStorage.removeItem("token");
                 setUser(null);
             } finally {
@@ -39,15 +50,7 @@ export function AuthProvider({ children }) {
             }
         };
         checkAuth();
-
-        interval = setInterval(checkAuth, 24 * 60 * 60 * 1000); // Thời gian sống của token 1 ngày
-        return () => clearInterval(interval);
-
     }, []);
-
-    const login = (userData) => {
-        setUser(userData);
-    };
 
     const logout = async () => {
         try {

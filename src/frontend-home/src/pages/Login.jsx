@@ -11,18 +11,7 @@ function Login() {
     email: '',
     password: '',
   });
-  const [error, setError] = useState('');
 
-  // Xử lý sự kiện thay đổi trong form
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
-  };
-
-  // Xử lý sự kiện submit form
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
@@ -31,33 +20,25 @@ function Login() {
         Password: formData.password,
       });
 
-      if (response.data) {
-        // Kiểm tra trạng thái tài khoản
-        if (response.data.user.status === "inactive") {
-          toast.error('Tài khoản của bạn đã bị khóa. Vui lòng liên hệ admin.');
-          return;
-        }
-        // Kiểm tra role
-        if (response.data.user.role === 'Admin') {
-          // navigate('/admin/dashboard');
-          toast.error('Tài khoản của bạn không có quyền truy cập');
-        } else {
-          // Lưu token và cập nhật context
-          localStorage.setItem('token', response.data.token);
-          login(response.data.user);
-          toast.success('Đăng nhập thành công!');
-          navigate('/');
-        }
+      // Kiểm tra role Customer
+      if (response.data.user.role !== 'Customer') {
+        toast.error('Tài khoản của bạn không có quyền truy cập');
+        return;
       }
+
+      // Lưu token và thông tin user
+      localStorage.setItem('token', response.data.token);
+      login(response.data.user);
+      toast.success('Đăng nhập thành công!');
+      navigate('/');
     } catch (error) {
       if (error.response?.data?.message) {
         toast.error(error.response.data.message);
-        setError(error.response.data.message);
+      } else if (error.code === 'ECONNABORTED') {
+        toast.error('Không thể kết nối đến server. Vui lòng thử lại sau.');
       } else {
-        toast.error('Đã có lỗi xảy ra khi đăng nhập');
-        setError('Đã có lỗi xảy ra khi đăng nhập');
+        toast.error('Đã có lỗi xảy ra. Vui lòng thử lại.');
       }
-      console.error('Login error:', error);
     }
   };
 
@@ -75,12 +56,6 @@ function Login() {
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow-lg sm:rounded-xl sm:px-10 border border-gray-100">
           <form className="space-y-6" onSubmit={handleSubmit}>
-            {error && (
-              <div className="bg-red-50 border border-red-400 text-red-700 px-4 py-3 rounded-lg animate-shake">
-                {error}
-              </div>
-            )}
-
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Email
@@ -89,7 +64,9 @@ function Login() {
                 type="email"
                 name="email"
                 value={formData.email}
-                onChange={handleChange}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
                 required
                 className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm py-2.5 px-3.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
                 placeholder="Nhập email của bạn"
@@ -104,7 +81,9 @@ function Login() {
                 type="password"
                 name="password"
                 value={formData.password}
-                onChange={handleChange}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
                 required
                 className="mt-1 block w-full border border-gray-300 rounded-lg shadow-sm py-2.5 px-3.5 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200"
                 placeholder="Nhập mật khẩu của bạn"

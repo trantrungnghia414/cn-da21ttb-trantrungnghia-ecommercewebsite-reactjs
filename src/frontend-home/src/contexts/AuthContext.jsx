@@ -1,21 +1,15 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { axiosClient } from '../config/axios.config';
-import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 const AuthContext = createContext();
 
-// Provider cho AuthContext
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  console.log(user);
-
-  // Kiểm tra trạng thái đăng nhập
   useEffect(() => {
-    let interval;
-    let isSubscribed = true; // Để tránh memory leak
-
     const checkAuth = async () => {
       const token = localStorage.getItem('token');
       if (!token) {
@@ -24,65 +18,49 @@ export function AuthProvider({ children }) {
       }
 
       try {
-        const response = await axiosClient.post('/api/auth/check', {
-          token,
-        });
-
+        const response = await axiosClient.post('/api/auth/check', { token });
         const userData = response.data.data.user;
-
-        if (!isSubscribed) return;
 
         if (userData.Role === 'Customer' && userData.Status === 'active') {
           setUser(userData);
         } else {
-          localStorage.removeItem('token');
-          setUser(null);
-          if (userData.Status === 'inactive') {
-            toast.error(
-              'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ admin.',
-            );
-          }
+          await handleLogout();
         }
       } catch (error) {
-        console.error('Check auth error:', error);
-        localStorage.removeItem('token');
-        setUser(null);
+        await handleLogout();
       } finally {
-        if (isSubscribed) {
-          setLoading(false);
-        }
+        setLoading(false);
       }
     };
 
     checkAuth();
+  }, []);
 
-    interval = setInterval(checkAuth, 24 * 60 * 60 * 1000); // thời gian sống của token 1 ngày
-    
-    // Cleanup function
-    return () => {
-      clearInterval(interval);
-      isSubscribed = false;
-    };
-  }, []); // Empty dependency array - chỉ chạy một lần khi mount
-
-  // Đăng nhập
   const login = (userData) => {
     setUser(userData);
   };
 
-  // Đăng xuất
-  const logout = async () => {
+  const handleLogout = async () => {
     try {
-      await axiosClient.post('/api/auth/logout');
-    } catch (error) {
-      console.error('Logout error:', error);
-    } finally {
       localStorage.removeItem('token');
       setUser(null);
+      navigate('/login');
+    } catch (error) {
+      console.error('Logout error:', error);
     }
   };
 
-  // Trả về AuthContext.Provider với các giá trị user, login, logout, loading
+  const logout = async () => {
+    try {
+      await axiosClient.post('/api/auth/logout');
+      await handleLogout();
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Ngay cả khi API thất bại, vẫn thực hiện logout ở client
+      await handleLogout();
+    }
+  };
+
   return (
     <AuthContext.Provider value={{ user, login, logout, loading }}>
       {children}
@@ -90,7 +68,6 @@ export function AuthProvider({ children }) {
   );
 }
 
-// Custom hook để sử dụng AuthContext
 export function useAuth() {
   return useContext(AuthContext);
 }

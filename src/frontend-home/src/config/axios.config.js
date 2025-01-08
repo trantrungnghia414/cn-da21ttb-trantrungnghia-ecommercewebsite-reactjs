@@ -3,7 +3,7 @@ import toast from 'react-hot-toast';
 
 export const axiosClient = axios.create({
   baseURL: process.env.REACT_APP_DOMAIN_SERVER_API || 'http://localhost:5000',
-  timeout: 30000,
+  timeout: 10000,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -31,32 +31,22 @@ axiosClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Bỏ qua thông báo lỗi cho route login và logout
+    if (
+      originalRequest.url === '/api/auth/login' ||
+      originalRequest.url === '/api/auth/logout'
+    ) {
+      return Promise.reject(error);
+    }
+
     if (
       error.response?.status === 401 ||
       (error.response?.status === 403 && !originalRequest._retry)
     ) {
       originalRequest._retry = true;
-      // try {
-      //   const response = await axiosClient.get('/api/auth/check');
-      //   if (response.data.user && response.data.user.role === 'Customer') {
-      //     return axiosClient(originalRequest);
-      //   } else {
-      //     localStorage.removeItem('token');
-      //     // window.location.href = '/login';
-      //   }
-      // } catch (refreshError) {
-      //   localStorage.removeItem('token');
-      //   // window.location.href = '/login';
-      // }
-      try {
-        localStorage.removeItem('token');
-        window.location.href = '/';
-        toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!");
-        return Promise.reject(error);
-      } catch (refreshError) {
-        console.error("Refresh error:", refreshError);
-        return Promise.reject(refreshError);
-      }
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+      toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!');
     }
     return Promise.reject(error);
   },
