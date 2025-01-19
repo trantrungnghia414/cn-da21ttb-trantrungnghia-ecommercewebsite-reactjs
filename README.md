@@ -50,8 +50,9 @@ Website thương mại điện tử chuyên bán các sản phẩm công nghệ 
 ## Cài đặt và Chạy dự án
 
 ### Yêu cầu hệ thống
-- Node.js (v14 trở lên)
-- MySQL (v8.0 trở lên)
+
+-   Node.js (v14 trở lên)
+-   MySQL (v8.0 trở lên)
 
 ### Các bước cài đặt
 
@@ -83,8 +84,9 @@ npm install
 ```
 
 5. Cấu hình database
-- Import file `src/database/ecommanagement.sql` vào MySQL
-- Cấu hình thông tin kết nối trong file `.env`
+
+-   Import file `src/database/ecommanagement.sql` vào MySQL
+-   Cấu hình thông tin kết nối trong file `.env`
 
 ### Chạy dự án
 
@@ -116,47 +118,71 @@ Chi tiết API có thể xem trong file `src/database/structure_api.txt`
 ## Công nghệ sử dụng
 
 ### Frontend
-- ReactJS
-- TailwindCSS
-- Axios
-- React Router
-- React Hot Toast
-- CKEditor
-- Swiper
+
+-   ReactJS
+-   TailwindCSS
+-   Axios
+-   React Router
+-   React Hot Toast
+-   CKEditor
+-   Swiper
 
 ### Backend
-- Node.js
-- Express.js
-- MySQL
-- Sequelize ORM
-- JWT Authentication
-- Multer
-- CORS
+
+-   Node.js
+-   Express.js
+-   MySQL
+-   Sequelize ORM
+-   JWT Authentication
+-   Multer
+-   CORS
 
 ## Tính năng nổi bật
 
 1. **Quản lý sản phẩm đa dạng**
-   - Hỗ trợ nhiều biến thể sản phẩm (màu sắc, dung lượng)
-   - Upload nhiều hình ảnh cho mỗi màu sắc
-   - Mô tả sản phẩm với rich text editor
+
+    - Hỗ trợ nhiều biến thể sản phẩm (màu sắc, dung lượng)
+    - Upload nhiều hình ảnh cho mỗi màu sắc
+    - Mô tả sản phẩm với rich text editor
 
 2. **Thanh toán đa dạng**
-   - Thanh toán khi nhận hàng (COD)
-   - Thanh toán qua VNPay
+
+    - Thanh toán khi nhận hàng (COD)
+    - Thanh toán qua VNPay
 
 3. **Tích hợp giao hàng**
-   - Tích hợp API Giao Hàng Nhanh (GHN)
-   - Tính phí vận chuyển tự động
-   - Theo dõi đơn hàng realtime
+
+    - Tích hợp API Giao Hàng Nhanh (GHN)
+    - Tính phí vận chuyển tự động
+    - Theo dõi đơn hàng realtime
 
 4. **Bảo mật**
-   - JWT Authentication
-   - Phân quyền admin/user
-   - Bảo vệ route
+    - JWT Authentication
+    - Phân quyền admin/user
+    - Bảo vệ route
 
 ## Người đóng góp
 
-- Trần Trung Nghĩa - Developer
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/trantrungnghia414">
+        <img src="https://avatars.githubusercontent.com/trantrungnghia414" width="100px;" alt="Trần Trung Nghĩa"/>
+        <br />
+        <sub><b>Trần Trung Nghĩa</b></sub>
+      </a>
+      <br />
+      <sub>Developer</sub>
+      <br />
+      <a href="mailto:trungnghia414345@gmail.com">
+        <img src="https://img.shields.io/badge/Email-D14836?style=flat&logo=gmail&logoColor=white" />
+      </a>
+      <a href="tel:0398539414">
+        <img src="https://img.shields.io/badge/Phone-00C300?style=flat&logo=phone&logoColor=white" />
+      </a>
+    </td>
+  </tr>
+</table>
 
 ## License
 
