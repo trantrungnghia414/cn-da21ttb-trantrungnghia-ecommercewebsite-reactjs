@@ -10,7 +10,7 @@
 
 # production
 /build
-temp.txt
+# temp.txt
 
 # misc
 .DS_Store

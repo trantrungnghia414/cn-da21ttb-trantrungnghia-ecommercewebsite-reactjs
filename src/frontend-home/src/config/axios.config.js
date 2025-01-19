@@ -14,7 +14,8 @@ export const axiosClient = axios.create({
 // Request interceptor
 axiosClient.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
+    const token =
+      localStorage.getItem('token') || sessionStorage.getItem('token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -45,6 +46,8 @@ axiosClient.interceptors.response.use(
     ) {
       originalRequest._retry = true;
       localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
+      localStorage.removeItem('rememberMe');
       window.location.href = '/login';
       toast.error('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại!');
     }

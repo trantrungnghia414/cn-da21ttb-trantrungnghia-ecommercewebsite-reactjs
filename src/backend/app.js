@@ -29,9 +29,22 @@ app.use("/api/categories", require("./routes/categoryRoutes"));
 app.use("/api/memorysizes", require("./routes/memorySizeRoutes"));
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/users", require("./routes/userRoutes"));
+app.use("/api/cart", require("./routes/cartRoutes"));
+app.use("/api/orders", require("./routes/orderRoutes"));
+app.use("/api/payments", require("./routes/paymentRoutes"));
+app.use("/api/shipping", require("./routes/shippingRoutes"));
+app.use("/api/stats", require("./routes/statsRoutes"));
+const promotionRoutes = require("./routes/promotionRoutes");
+app.use("/api/promotions", promotionRoutes);
 
 // Thêm error handling middleware
 app.use((err, req, res, next) => {
     console.error(err.stack);
     res.status(500).json({ error: "Có lỗi xảy ra!" });
+});
+
+// Add logging middleware
+app.use((req, res, next) => {
+    console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+    next();
 });

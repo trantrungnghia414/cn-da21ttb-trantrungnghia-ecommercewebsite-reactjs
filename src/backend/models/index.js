@@ -15,7 +15,11 @@ db.Category = require('./category')(sequelize, Sequelize);
 db.MemorySize = require('./memorysize')(sequelize, Sequelize);
 db.Brand = require('./brand')(sequelize, Sequelize);
 db.Supplier = require('./supplier')(sequelize, Sequelize);
-db.User = require('./user')(sequelize, Sequelize);
+db.User = require("./user")(sequelize, Sequelize);
+db.Cart = require("./cart")(sequelize, Sequelize);
+db.Order = require("./order")(sequelize, Sequelize);
+db.OrderDetail = require("./orderDetail")(sequelize, Sequelize);
+db.Promotion = require("./promotion")(sequelize, Sequelize);
 
 Object.keys(db).forEach((modelName) => {
   if (db[modelName].associate) {

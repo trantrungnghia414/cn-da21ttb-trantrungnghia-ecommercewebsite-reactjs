@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { axiosClient } from '../config/axios.config';
 import { formatCurrency } from '~/utils/format';
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -12,9 +12,13 @@ import '~/assets/styles/index.css';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-hot-toast';
+import { useCart } from '../contexts/CartContext';
 
 function ProductDetail() {
   const { slug } = useParams();
+  const [searchParams] = useSearchParams();
+  const variantId = searchParams.get('variant');
+  const colorId = searchParams.get('color');
   const [product, setProduct] = useState(null);
   const [selectedVariant, setSelectedVariant] = useState(null);
   const [selectedColor, setSelectedColor] = useState(null);
@@ -26,6 +30,7 @@ function ProductDetail() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     // Scroll lên đầu trang khi component mount
@@ -35,13 +40,31 @@ function ProductDetail() {
       try {
         const response = await axiosClient.get(`/api/products/${slug}`);
         setProduct(response.data);
-        // Mặc định chọn variant đầu tiên
-        if (response.data.variants && response.data.variants.length > 0) {
+
+        // Tìm và chọn variant từ URL params
+        if (variantId && response.data.variants) {
+          const variant = response.data.variants.find(
+            (v) => v.VariantID === parseInt(variantId),
+          );
+          if (variant) {
+            setSelectedVariant(variant);
+            // Tìm và chọn color từ URL params
+            if (colorId && variant.colors) {
+              const color = variant.colors.find(
+                (c) => c.ColorID === parseInt(colorId),
+              );
+              if (color) {
+                setSelectedColor(color);
+              }
+            }
+          }
+        } else if (
+          response.data.variants &&
+          response.data.variants.length > 0
+        ) {
+          // Fallback to first variant and color if no params
           setSelectedVariant(response.data.variants[0]);
-          if (
-            response.data.variants[0].colors &&
-            response.data.variants[0].colors.length > 0
-          ) {
+          if (response.data.variants[0].colors?.length > 0) {
             setSelectedColor(response.data.variants[0].colors[0]);
           }
         }
@@ -54,7 +77,7 @@ function ProductDetail() {
     };
 
     fetchProduct();
-  }, [slug]);
+  }, [slug, variantId, colorId]);
 
   useEffect(() => {
     const fetchRelatedProducts = async () => {
@@ -105,7 +128,7 @@ function ProductDetail() {
     }
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = async () => {
     if (!user) {
       toast.error('Vui lòng đăng nhập để thêm vào giỏ hàng!');
       navigate('/login');
@@ -117,8 +140,32 @@ function ProductDetail() {
       return;
     }
 
-    // Xử lý thêm vào giỏ hàng ở đây
-    toast.success('Đã thêm vào giỏ hàng!');
+    if (selectedColor.Stock === 0) {
+      toast.error('Sản phẩm đã hết hàng!');
+      return;
+    }
+
+    if (quantity > selectedColor.Stock) {
+      toast.error(`Chỉ còn ${selectedColor.Stock} sản phẩm trong kho!`);
+      return;
+    }
+
+    try {
+      const result = await addToCart(
+        selectedVariant.VariantID,
+        selectedColor.ColorID,
+        quantity,
+      );
+
+      if (result.success) {
+        toast.success('Đã thêm vào giỏ hàng!');
+      } else {
+        toast.error(result.error || 'Có lỗi xảy ra');
+      }
+    } catch (error) {
+      console.error('Error adding to cart:', error);
+      toast.error('Có lỗi xảy ra khi thêm vào giỏ hàng');
+    }
   };
 
   if (loading) {
@@ -376,9 +423,9 @@ function ProductDetail() {
                   </svg>
                 </button>
 
-                <span className="text-sm text-gray-500">
+                {/* <span className="text-sm text-gray-500">
                   Còn {selectedColor?.Stock} sản phẩm
-                </span>
+                </span> */}
               </div>
             </div>
           )}
@@ -440,7 +487,7 @@ function ProductDetail() {
       </div>
 
       {/* Phần sản phẩm liên quan */}
-      <div className="mt-16">
+      <div className="mt-1">
         <h2 className="text-2xl font-bold text-gray-900 mb-6">
           Sản phẩm liên quan
         </h2>
@@ -482,7 +529,7 @@ function ProductDetail() {
                       />
                     </div>
                     <div className="p-3">
-                      <h3 className="text-lg font-medium text-gray-900 mb-2 line-clamp-2 group-hover:text-red-600">
+                      <h3 className="text-lg font-medium text-gray-900 mb-2 line-clamp-2 group-hover:text-red-600 h-14">
                         {relatedProduct.Name}
                       </h3>
                       <div className="flex items-center justify-between">

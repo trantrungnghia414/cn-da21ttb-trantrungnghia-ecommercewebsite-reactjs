@@ -1,0 +1,21 @@
+Tên đề tài: Website Thương mại điện tử bán đồ công nghệ
+
+1. Chức năng tổng quát của website
+
+A. Phần người dùng (Client)
+•  Đăng ký, đăng nhập, quên mật khẩu
+•  Xem danh sách sản phẩm và tìm kiếm
+•  Lọc sản phẩm theo danh mục, giá, thương hiệu
+•  Xem chi tiết sản phẩm
+•  Giỏ hàng và thanh toán
+•  Theo dõi đơn hàng
+•  Đánh giá và bình luận sản phẩm
+•  Quản lý thông tin cá nhân
+
+B. Phần quản trị (Admin)
+•  Quản lý sản phẩm (CRUD)
+•  Quản lý danh mục
+•  Quản lý đơn hàng
+•  Quản lý người dùng
+•  Thống kê doanh thu
+•  Quản lý khuyến mãi

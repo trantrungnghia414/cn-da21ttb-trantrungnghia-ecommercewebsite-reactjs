@@ -1,0 +1,83 @@
+Cấu trúc API
+
+1. Authentication:1. Authentication:
+•  POST /api/auth/register
+•  POST /api/auth/login  
+•  POST /api/auth/logout
+•  GET /api/auth/profile
+•  PUT /api/auth/profile
+
+2. Products:
+•  GET /api/products - Lấy danh sách sản phẩm
+•  GET /api/products/:slug - Chi tiết sản phẩm
+•  POST /api/products (admin) - Thêm sản phẩm mới
+•  PUT /api/products/:slug (admin) - Cập nhật sản phẩm
+•  DELETE /api/products/:slug (admin) - Xóa sản phẩm
+•  GET /api/products/category/:categoryId - Lọc theo danh mục
+•  GET /api/products/brand/:brandId - Lọc theo thương hiệu
+
+3. Product Colors:
+•  GET /api/products/:id/colors - Lấy màu sắc của sản phẩm
+•  POST /api/products/:id/colors (admin)
+•  PUT /api/products/:id/colors/:colorId (admin)
+•  DELETE /api/products/:id/colors/:colorId (admin)
+
+4. Product Variants:
+•  GET /api/products/:id/variants - Lấy biến thể của sản phẩm
+•  POST /api/products/:id/variants (admin)
+•  PUT /api/products/:id/variants/:variantId (admin)
+•  DELETE /api/products/:id/variants/:variantId (admin)
+
+5. Product Images:
+•  GET /api/products/colors/:colorId/images
+•  POST /api/products/colors/:colorId/images (admin)
+•  DELETE /api/products/images/:imageId (admin)
+
+6. Categories:
+•  GET /api/categories
+•  GET /api/categories/:slug
+•  POST /api/categories (admin)
+•  PUT /api/categories/:slug (admin)
+•  DELETE /api/categories/:slug (admin)
+
+7. Brands:
+•  GET /api/brands
+•  GET /api/brands/:slug
+•  POST /api/brands (admin)
+•  PUT /api/brands/:slug (admin)
+•  DELETE /api/brands/:slug (admin)
+
+8. Cart:
+•  GET /api/cart - Xem giỏ hàng
+•  POST /api/cart - Thêm vào giỏ hàng
+•  PUT /api/cart/:variantId - Cập nhật số lượng
+•  DELETE /api/cart/:variantId - Xóa khỏi giỏ hàng
+
+9. Orders:
+•  GET /api/orders - Lấy danh sách đơn hàng
+•  POST /api/orders - Tạo đơn hàng mới
+•  GET /api/orders/:id - Chi tiết đơn hàng
+•  PUT /api/orders/:id/status (admin) - Cập nhật trạng thái
+
+10. Payments:
+•  POST /api/payments - Tạo thanh toán mới
+•  GET /api/payments/:orderId - Xem thanh toán của đơn hàng
+•  PUT /api/payments/:id/status (admin) - Cập nhật trạng thái
+
+11. Reviews:
+•  GET /api/products/:id/reviews - Lấy đánh giá của sản phẩm
+•  POST /api/products/:id/reviews - Thêm đánh giá
+•  PUT /api/reviews/:id - Sửa đánh giá
+•  DELETE /api/reviews/:id (admin) - Xóa đánh giá
+
+12. Suppliers (Admin only):
+•  GET /api/suppliers
+•  POST /api/suppliers
+•  PUT /api/suppliers/:id
+•  DELETE /api/suppliers/:id
+
+13. Promotions:
+•  GET /api/promotions
+•  POST /api/promotions (admin)
+•  PUT /api/promotions/:id (admin)
+•  DELETE /api/promotions/:id (admin)

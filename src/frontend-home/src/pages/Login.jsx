@@ -11,6 +11,7 @@ function Login() {
     email: '',
     password: '',
   });
+  const [rememberMe, setRememberMe] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -26,11 +27,18 @@ function Login() {
         return;
       }
 
-      // Lưu token và thông tin user
-      localStorage.setItem('token', response.data.token);
-      login(response.data.user);
+      // Lưu token dựa vào trạng thái remember me
+      if (rememberMe) {
+        localStorage.setItem('token', response.data.token);
+      } else {
+        sessionStorage.setItem('token', response.data.token);
+      }
+
+      // Đăng nhập với remember me
+      login(response.data.user, rememberMe);
       toast.success('Đăng nhập thành công!');
       navigate('/');
+      window.location.reload();
     } catch (error) {
       if (error.response?.data?.message) {
         toast.error(error.response.data.message);
@@ -94,9 +102,15 @@ function Login() {
               <div className="flex items-center">
                 <input
                   type="checkbox"
+                  id="remember-me"
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                   className="h-4 w-4 text-red-500 focus:ring-red-500 border-gray-300 rounded cursor-pointer"
                 />
-                <label className="ml-2 block text-sm text-gray-900 cursor-pointer">
+                <label
+                  htmlFor="remember-me"
+                  className="ml-2 block text-sm text-gray-900 cursor-pointer"
+                >
                   Ghi nhớ đăng nhập
                 </label>
               </div>

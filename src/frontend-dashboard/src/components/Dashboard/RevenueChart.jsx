@@ -1,76 +1,95 @@
+import { useState, useEffect } from "react";
 import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer
-} from 'recharts';
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    CartesianGrid,
+    Tooltip,
+    ResponsiveContainer,
+} from "recharts";
+import { axiosAppJson } from "~/config/axios.config";
 
 function RevenueChart() {
-  // Dữ liệu mẫu
-  const data = [
-    { month: 'T1', revenue: 0 },
-    { month: 'T2', revenue: 0 },
-    { month: 'T3', revenue: 0 },
-    { month: 'T4', revenue: 0 },
-    { month: 'T5', revenue: 0 },
-    { month: 'T6', revenue: 0 },
-    { month: 'T7', revenue: 0 },
-    { month: 'T8', revenue: 0 },
-    { month: 'T9', revenue: 0 },
-    { month: 'T10', revenue: 0 },
-    { month: 'T11', revenue: 0 },
-    { month: 'T12', revenue: 0 }
-  ];
+    const [revenueData, setRevenueData] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-  return (
-    <div className="h-[400px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <LineChart
-          data={data}
-          margin={{
-            top: 5,
-            right: 30,
-            left: 20,
-            bottom: 5,
-          }}
-        >
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
-          <YAxis 
-            tickFormatter={(value) => 
-              new Intl.NumberFormat('vi-VN', {
-                style: 'currency',
-                currency: 'VND',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-              }).format(value)
+    useEffect(() => {
+        const fetchRevenueData = async () => {
+            try {
+                const response = await axiosAppJson.get("/api/stats/revenue");
+                setRevenueData(response.data);
+                setLoading(false);
+            } catch (error) {
+                console.error("Error fetching revenue data:", error);
+                setLoading(false);
             }
-          />
-          <Tooltip 
-            formatter={(value) => 
-              new Intl.NumberFormat('vi-VN', {
-                style: 'currency',
-                currency: 'VND',
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0,
-              }).format(value)
-            }
-          />
-          <Line
-            type="monotone"
-            dataKey="revenue"
-            stroke="#3b82f6"
-            strokeWidth={2}
-            dot={{ r: 4 }}
-            activeDot={{ r: 8 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
-    </div>
-  );
+        };
+
+        fetchRevenueData();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="h-[400px] flex items-center justify-center">
+                <div className="animate-pulse text-gray-500">
+                    Đang tải dữ liệu...
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="h-[400px]">
+            <ResponsiveContainer width="100%" height="100%">
+                <LineChart
+                    data={revenueData}
+                    margin={{
+                        top: 5,
+                        right: 30,
+                        left: 20,
+                        bottom: 5,
+                    }}
+                >
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis
+                        dataKey="month"
+                        tickFormatter={(value) => `T${value}`}
+                    />
+                    <YAxis
+                        tickFormatter={(value) => {
+                            if (value >= 1000000000) {
+                                return `${(value / 1000000000).toFixed(1)} tỷ`;
+                            }
+                            if (value >= 1000000) {
+                                return `${(value / 1000000).toFixed(1)} tr`;
+                            }
+                            return `${(value / 1000).toFixed(0)} đ`;
+                        }}
+                    />
+                    <Tooltip
+                        formatter={(value) => {
+                            return (
+                                new Intl.NumberFormat("vi-VN", {
+                                    style: "decimal",
+                                    maximumFractionDigits: 0,
+                                }).format(value) + " đ"
+                            );
+                        }}
+                        labelFormatter={(label) => `Tháng ${label}`}
+                    />
+                    <Line
+                        type="monotone"
+                        dataKey="revenue"
+                        stroke="#3b82f6"
+                        strokeWidth={2}
+                        dot={{ r: 4 }}
+                        activeDot={{ r: 8 }}
+                    />
+                </LineChart>
+            </ResponsiveContainer>
+        </div>
+    );
 }
 
 export default RevenueChart;

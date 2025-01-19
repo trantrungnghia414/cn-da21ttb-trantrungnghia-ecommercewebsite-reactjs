@@ -33,6 +33,12 @@ function Products() {
     }
   }, [searchParams]);
 
+  // Tính toán sản phẩm hiển thị cho trang hiện tại
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  const displayedProducts = products.slice(startIndex, endIndex);
+
+  // Tính tổng số trang dựa trên tổng số sản phẩm
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -40,8 +46,6 @@ function Products() {
         const [productsRes, categoriesRes, brandsRes] = await Promise.all([
           axiosClient.get('/api/products', {
             params: {
-              page: currentPage,
-              limit: itemsPerPage,
               category:
                 selectedCategory !== 'all' ? selectedCategory : undefined,
               brand: selectedBrand !== 'all' ? selectedBrand : undefined,
@@ -52,12 +56,10 @@ function Products() {
           axiosClient.get('/api/brands'),
         ]);
 
-        console.log('Selected Category:', selectedCategory);
-        console.log('API Response:', productsRes.data);
-
         setProducts(productsRes.data);
         setCategories(categoriesRes.data);
         setBrands(brandsRes.data);
+        // Tính tổng số trang dựa trên tổng số sản phẩm
         setTotalPages(Math.ceil(productsRes.data.length / itemsPerPage));
         setLoading(false);
       } catch (error) {
@@ -68,7 +70,7 @@ function Products() {
     };
 
     fetchData();
-  }, [currentPage, selectedCategory, selectedBrand, sortBy, itemsPerPage]);
+  }, [selectedCategory, selectedBrand, sortBy, itemsPerPage]);
 
   const handleCategoryChange = (categoryId) => {
     setSelectedCategory(categoryId);
@@ -87,19 +89,6 @@ function Products() {
 
   const toggleViewMode = () => {
     setViewMode((prev) => (prev === 'grid' ? 'list' : 'grid'));
-  };
-
-  const handleAddToCart = (e) => {
-    e.preventDefault();
-
-    if (!user) {
-      toast.error('Vui lòng đăng nhập để thêm vào giỏ hàng!');
-      navigate('/login');
-      return;
-    }
-
-    // Xử lý thêm vào giỏ hàng ở đây
-    toast.success('Đã thêm vào giỏ hàng!');
   };
 
   if (loading) {
@@ -224,7 +213,7 @@ function Products() {
       </div>
 
       {/* Products Grid/List */}
-      {products.length > 0 ? (
+      {displayedProducts.length > 0 ? (
         <div
           className={
             viewMode === 'grid'
@@ -232,7 +221,7 @@ function Products() {
               : 'flex flex-col gap-4'
           }
         >
-          {products.map((product) => (
+          {displayedProducts.map((product) => (
             <Link
               key={product.ProductID}
               to={`/products/${product.Slug}`}
@@ -256,7 +245,7 @@ function Products() {
                   </div>
                 </div>
                 <div className={`p-4 ${viewMode === 'list' ? 'flex-1' : ''}`}>
-                  <h3 className="text-xl font-medium text-gray-900 mb-2 line-clamp-2 group-hover:text-red-600">
+                  <h3 className="h-14 text-xl font-medium text-gray-900 mb-2 line-clamp-2 group-hover:text-red-600">
                     {product.Name}
                   </h3>
                   <div className="flex items-center justify-between mb-3">
@@ -271,20 +260,12 @@ function Products() {
                       {product.variants?.[0]?.memorySize?.MemorySize}
                     </span>
                   </div>
-                  <button
-                    onClick={handleAddToCart}
+                  <Link
+                    to={`/products/${product.Slug}`}
                     className="w-full bg-red-500 text-white py-2 rounded-lg hover:bg-red-600 transition-colors duration-300 flex items-center justify-center gap-2"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5"
-                      viewBox="0 0 20 20"
-                      fill="currentColor"
-                    >
-                      <path d="M3 1a1 1 0 000 2h1.22l.305 1.222a.997.997 0 00.01.042l1.358 5.43-.893.892C3.74 11.846 4.632 14 6.414 14H15a1 1 0 000-2H6.414l1-1H14a1 1 0 00.894-.553l3-6A1 1 0 0017 3H6.28l-.31-1.243A1 1 0 005 1H3zM16 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM6.5 18a1.5 1.5 0 100-3 1.5 1.5 0 000 3z" />
-                    </svg>
-                    Thêm vào giỏ
-                  </button>
+                    Mua ngay
+                  </Link>
                 </div>
               </div>
             </Link>

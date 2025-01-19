@@ -1,6 +1,3 @@
 node_modules/
 
 .env
-
-# ignore folder backend/assets/images/products
-backend/assets/images/products/

@@ -7,31 +7,60 @@ import Cart from '~/pages/Cart';
 import Home from '~/pages/Home';
 import ProductDetail from '~/pages/ProductDetail';
 import Products from '~/pages/Products';
+import OrderTracking from '~/pages/OrderTracking';
 
 const routes = [
   {
     path: '/',
-    element: <DefaultLayout><Home /></DefaultLayout>,
+    element: (
+      <DefaultLayout>
+        <Home />
+      </DefaultLayout>
+    ),
   },
   {
     path: '/products',
-    element: <DefaultLayout><Products /></DefaultLayout>,
+    element: (
+      <DefaultLayout>
+        <Products />
+      </DefaultLayout>
+    ),
   },
   {
     path: '/products/:slug',
-    element: <DefaultLayout><ProductDetail /></DefaultLayout>,
+    element: (
+      <DefaultLayout>
+        <ProductDetail />
+      </DefaultLayout>
+    ),
   },
   {
     path: '/cart',
-    element: <DefaultLayout><Cart /></DefaultLayout>,
+    element: (
+      <DefaultLayout>
+        <Cart />
+      </DefaultLayout>
+    ),
   },
   {
-    path: '/login', 
-    element: <SingleLayout><Login /></SingleLayout>,
+    path: '/login',
+    element: (
+      <SingleLayout>
+        <Login />
+      </SingleLayout>
+    ),
   },
   {
     path: '/register',
-    element: <SingleLayout><Register /></SingleLayout>,
+    element: (
+      <SingleLayout>
+        <Register />
+      </SingleLayout>
+    ),
+  },
+  {
+    path: '/order-tracking/:orderId',
+    element: <OrderTracking />,
   },
 ];
 

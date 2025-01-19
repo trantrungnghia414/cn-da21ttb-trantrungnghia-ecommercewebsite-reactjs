@@ -1,58 +1,24 @@
-backend/
-├── config/
-│   ├── config.js         # Cấu hình database
-│   └── multer.js         # Cấu hình upload file
-├── controllers/
-│   ├── authController.js # Xử lý logic xác thực người dùng
-│   ├── productController.js # Xử lý logic sản phẩm
-│   ├── categoryController.js # Xử lý logic danh mục
-│   ├── brandController.js # Xử lý logic thương hiệu
-│   ├── cartController.js # Xử lý logic giỏ hàng
-│   ├── orderController.js # Xử lý logic đơn hàng
-│   ├── paymentController.js # Xử lý logic thanh toán
-│   ├── reviewController.js # Xử lý logic đánh giá
-│   ├── supplierController.js # Xử lý logic nhà cung cấp
-│   ├── promotionController.js # Xử lý logic khuyến mãi
-├── middlewares/
-│   ├── auth.js           # Middleware xác thực JWT
-│   ├── upload.js         # Middleware xử lý upload
-│   └── error.js          # Middleware xử lý lỗi
-├── models/
-│   ├── index.js          # Khởi tạo Sequelize và kết nối models
-│   ├── user.js           # Định nghĩa model User
-│   ├── product.js        # Định nghĩa model Product
-│   ├── category.js       # Định nghĩa model Category
-│   ├── brand.js          # Định nghĩa model Brand
-│   ├── cart.js           # Định nghĩa model Cart
-│   ├── order.js          # Định nghĩa model Order
-│   ├── payment.js        # Định nghĩa model Payment
-│   ├── review.js         # Định nghĩa model Review
-│   ├── supplier.js       # Định nghĩa model Supplier
-│   ├── promotion.js      # Định nghĩa model Promotion
-│   ├── productColor.js   # Định nghĩa model ProductColor
-│   ├── productImage.js   # Định nghĩa model ProductImage
-│   ├── productVariant.js # Định nghĩa model ProductVariant
-│   ├── orderDetail.js    # Định nghĩa model OrderDetail
-│   ├── transactionHistory.js # Định nghĩa model TransactionHistory
-├── routes/
-│   ├── index.js          # Tập hợp tất cả routes
-│   ├── authRoutes.js     # Định nghĩa route cho xác thực
-│   ├── productRoutes.js  # Định nghĩa route cho sản phẩm
-│   ├── categoryRoutes.js # Định nghĩa route cho danh mục
-│   ├── brandRoutes.js    # Định nghĩa route cho thương hiệu
-│   ├── cartRoutes.js     # Định nghĩa route cho giỏ hàng
-│   ├── orderRoutes.js    # Định nghĩa route cho đơn hàng
-│   ├── paymentRoutes.js  # Định nghĩa route cho thanh toán
-│   ├── reviewRoutes.js   # Định nghĩa route cho đánh giá
-│   ├── supplierRoutes.js # Định nghĩa route cho nhà cung cấp
-│   ├── promotionRoutes.js # Định nghĩa route cho khuyến mãi
-├── uploads/              # Thư mục lưu trữ ảnh upload
-│   ├── products/         # Thư mục lưu trữ ảnh sản phẩm
-│   ├── users/            # Thư mục lưu trữ ảnh người dùng (nếu cần)
-├── utils/
-│   ├── jwt.js            # Các hàm xử lý JWT
-│   └── helpers.js        # Các hàm tiện ích
-├── .env                  # File cấu hình môi trường
-├── index.js              # Entry point
-├── package.json          # File cấu hình npm
-└── README.md             # File hướng dẫn
+# .env
+PORT=5000
+
+# Database
+DB_HOST=your_db_host
+DB_USER=your_db_user
+DB_PASS=your_db_pass
+DB_NAME=your_db_name
+
+# JWT
+JWT_SECRET=your_jwt_secret
+
+# GHN
+GHN_TOKEN=your_ghn_token
+GHN_SHOP_ID=your_ghn_shop_id
+GHN_FROM_DISTRICT_ID=your_ghn_from_district_id
+GHN_FROM_WARD=your_ghn_from_ward
+GHN_FROM_ADDRESS=your_ghn_from_address
+GHN_FROM_PHONE=your_ghn_from_phone
+
+# VNPAY
+VNPAY_TMN_CODE=your_vnpay_tmn_code
+VNPAY_SECRET_KEY=your_vnpay_secret_key
+  

@@ -11,7 +11,8 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const token = localStorage.getItem('token');
+      const token =
+        localStorage.getItem('token') || sessionStorage.getItem('token');
       if (!token) {
         setLoading(false);
         return;
@@ -36,17 +37,32 @@ export function AuthProvider({ children }) {
     checkAuth();
   }, []);
 
-  const login = (userData) => {
+  const saveToken = (token, remember) => {
+    if (remember) {
+      localStorage.setItem('token', token);
+      localStorage.setItem('rememberMe', 'true');
+    } else {
+      sessionStorage.setItem('token', token);
+      localStorage.removeItem('rememberMe');
+    }
+  };
+
+  const login = (userData, remember = false) => {
     setUser(userData);
+    if (remember) {
+      localStorage.setItem('rememberMe', 'true');
+    }
   };
 
   const handleLogout = async () => {
     try {
       localStorage.removeItem('token');
+      sessionStorage.removeItem('token');
+      localStorage.removeItem('rememberMe');
       setUser(null);
       navigate('/login');
     } catch (error) {
-      console.error('Logout error:', error);
+      // console.error('Logout error:', error);
     }
   };
 
@@ -55,8 +71,6 @@ export function AuthProvider({ children }) {
       await axiosClient.post('/api/auth/logout');
       await handleLogout();
     } catch (error) {
-      console.error('Logout error:', error);
-      // Ngay cả khi API thất bại, vẫn thực hiện logout ở client
       await handleLogout();
     }
   };
