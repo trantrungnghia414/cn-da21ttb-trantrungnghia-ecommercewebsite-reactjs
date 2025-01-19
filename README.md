@@ -165,7 +165,7 @@ Chi tiết API có thể xem trong file `src/database/structure_api.txt`
 
 <div align="center">
     <a href="https://github.com/trantrungnghia414/cn-da21ttb-trantrungnghia-ecommercewebsite-reactjs">
-        <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" class="github-shield"/>
+        <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" style="width: 100px; height: 100px; border-radius: 50%;" />
     </a>
 </div>
 
