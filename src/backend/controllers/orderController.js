@@ -197,8 +197,8 @@ exports.createOrder = async (req, res) => {
                 req.socket.remoteAddress ||
                 req.connection.socket.remoteAddress;
 
-            let tmnCode = process.env.VNPAY_TMN_CODE;
-            let secretKey = process.env.VNPAY_SECRET_KEY;
+            let tmnCode = "KVRQR37P";
+            let secretKey = "4N3E01VG15W3SGL37ZC18GVRNDP77B1X";
             let vnpUrl = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
             let returnUrl = "http://localhost:5000/api/payments/return_payment";
             let orderId = order.OrderID;
@@ -268,9 +268,9 @@ exports.returnPayment = async (req, res) => {
     delete vnp_Params["vnp_SecureHash"];
     delete vnp_Params["vnp_SecureHashType"];
     vnp_Params = sortObject(vnp_Params);
-    let tmnCode = process.env.VNPAY_TMN_CODE;
+    let tmnCode = "KVRQR37P";
     vnp_Params["vnp_TmnCode"] = tmnCode;
-    let secretKey = process.env.VNPAY_SECRET_KEY;
+    let secretKey = "4N3E01VG15W3SGL37ZC18GVRNDP77B1X";
     let querystring = require("qs");
     let signData = querystring.stringify(vnp_Params, { encode: false });
     let crypto = require("crypto");
