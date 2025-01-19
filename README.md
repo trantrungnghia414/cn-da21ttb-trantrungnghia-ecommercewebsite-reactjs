@@ -163,11 +163,12 @@ Chi tiết API có thể xem trong file `src/database/structure_api.txt`
 
 ## Người đóng góp
 
-<div align="center">
-    <a href="https://github.com/trantrungnghia414/cn-da21ttb-trantrungnghia-ecommercewebsite-reactjs">
-        <img src="https://avatars.githubusercontent.com/u/140692885?v=4" style="width: 100px; height: 100px; border-radius: 50%;" />
-    </a>
-</div>
+<img align="left" src="https://avatars.githubusercontent.com/u/140692885?v=4" width="50" height="50" style="border-radius: 50%;" />
+
+**Trần Trung Nghĩa**  
+Developer
+
+<br clear="left"/>
 
 ## License
 
