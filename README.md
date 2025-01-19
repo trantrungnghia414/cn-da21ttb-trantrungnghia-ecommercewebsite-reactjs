@@ -163,26 +163,11 @@ Chi tiết API có thể xem trong file `src/database/structure_api.txt`
 
 ## Người đóng góp
 
-<table>
-  <tr>
-    <td align="center">
-      <a href="https://github.com/trantrungnghia414">
-        <img src="https://avatars.githubusercontent.com/trantrungnghia414" width="100px;" alt="Trần Trung Nghĩa"/>
-        <br />
-        <sub><b>Trần Trung Nghĩa</b></sub>
-      </a>
-      <br />
-      <sub>Developer</sub>
-      <br />
-      <a href="mailto:trungnghia414345@gmail.com">
-        <img src="https://img.shields.io/badge/Email-D14836?style=flat&logo=gmail&logoColor=white" />
-      </a>
-      <a href="tel:0398539414">
-        <img src="https://img.shields.io/badge/Phone-00C300?style=flat&logo=phone&logoColor=white" />
-      </a>
-    </td>
-  </tr>
-</table>
+<div align="center">
+    <a href="https://github.com/trantrungnghia414/cn-da21ttb-trantrungnghia-ecommercewebsite-reactjs">
+        <img src="https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white" class="github-shield"/>
+    </a>
+</div>
 
 ## License
 
