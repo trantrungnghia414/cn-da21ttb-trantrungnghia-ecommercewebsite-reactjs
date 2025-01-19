@@ -163,12 +163,13 @@ Chi tiết API có thể xem trong file `src/database/structure_api.txt`
 
 ## Người đóng góp
 
-<img align="left" src="./src/backend/assets/image/user/trungnghia.jpg" width="50" height="50" style="border-radius: 50%;" />
-
-**Trần Trung Nghĩa**  
-Developer
-
-<br clear="left"/>
+<div>
+    <a href="https://github.com/trantrungnghia414">
+        <img src="https://avatars.githubusercontent.com/trantrungnghia414" width="100px;" alt="Trần Trung Nghĩa" style="border-radius: 50%;"/>
+        <br />
+        <sub><b>Trần Trung Nghĩa</b></sub>
+      </a>
+</div>
 
 ## License
 
