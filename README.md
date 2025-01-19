@@ -155,7 +155,6 @@ Chi tiết API có thể xem trong file `src/database/structure_api.txt`
    - Bảo vệ route
 
 ## Người đóng góp
-![ảnh của người đóng góp](./src/backend/assets/image/user/trungnghia.jpg)
 
 - Trần Trung Nghĩa - Developer
 
