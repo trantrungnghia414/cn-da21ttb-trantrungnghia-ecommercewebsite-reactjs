@@ -167,7 +167,7 @@ Chi tiết API có thể xem trong file `src/database/structure_api.txt`
     <a href="https://github.com/trantrungnghia414">
         <img src="https://avatars.githubusercontent.com/trantrungnghia414" width="100px;" alt="Trần Trung Nghĩa" style="border-radius: 50%;"/>
         <br />
-        <sub><b>Trần Trung Nghĩa</b></sub>
+        <sub style="text-decoration: none; color: white; font-size: 16px;"><b>Trần Trung Nghĩa</b></sub>
       </a>
 </div>
 
