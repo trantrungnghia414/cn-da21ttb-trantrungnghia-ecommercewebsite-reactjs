@@ -163,7 +163,7 @@ Chi tiết API có thể xem trong file `src/database/structure_api.txt`
 
 ## Người đóng góp
 
-<img align="left" src="https://avatars.githubusercontent.com/u/140692885?v=4" width="50" height="50" style="border-radius: 50%;" />
+<img align="left" src="./src/backend/assets/image/user/trungnghia.jpg" width="50" height="50" style="border-radius: 50%;" />
 
 **Trần Trung Nghĩa**  
 Developer
