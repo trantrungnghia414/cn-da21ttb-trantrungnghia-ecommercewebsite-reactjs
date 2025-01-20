@@ -1,64 +1,95 @@
-# Website Thương mại điện tử bán đồ công nghệ
+# 🛍️ Website Thương mại điện tử bán đồ công nghệ
 
-![Logo](src/frontend-dashboard/src/assets/images/logo.png)
+<div align="center">
 
-Một website thương mại điện tử hiện đại để bán các sản phẩm công nghệ, với đầy đủ tính năng cho cả người dùng và quản trị viên.
+![Version](https://img.shields.io/badge/version-1.0.0-blue.svg?cacheSeconds=2592000)
+![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)
 
-## Tính năng chính
+</div>
 
-### 🛍️ Phần người dùng (Client)
+<div align="center">
+  <img src="src/frontend-dashboard/src/assets/images/logo.png" alt="Logo" width="200"/>
+  <p><i>Website thương mại điện tử hiện đại bán các sản phẩm công nghệ</i></p>
+</div>
 
--   Đăng ký, đăng nhập và quên mật khẩu
--   Xem danh sách sản phẩm và tìm kiếm
--   Lọc sản phẩm theo danh mục, giá, thương hiệu
--   Xem chi tiết sản phẩm với nhiều biến thể (màu sắc, dung lượng)
--   Giỏ hàng và thanh toán
--   Theo dõi đơn hàng
--   Đánh giá và bình luận sản phẩm
--   Quản lý thông tin cá nhân
+## ✨ Preview
+
+<div align="center">
+  <img src="preview/home.png" alt="Home Page" width="400"/>
+  <img src="preview/admin.png" alt="Admin Dashboard" width="400"/>
+</div>
+
+## 🎯 Tính năng nổi bật
+
+### 👥 Phần người dùng (Client)
+
+-   🔐 **Xác thực**: Đăng ký, đăng nhập và quên mật khẩu
+-   🔍 **Tìm kiếm**: Tìm kiếm sản phẩm với bộ lọc đa dạng
+-   📱 **Responsive**: Tương thích với mọi thiết bị
+-   🛒 **Giỏ hàng**: Quản lý giỏ hàng và thanh toán
+-   📦 **Đơn hàng**: Theo dõi trạng thái đơn hàng
+-   ⭐ **Đánh giá**: Bình luận và đánh giá sản phẩm
+-   👤 **Cá nhân**: Quản lý thông tin tài khoản
 
 ### 👨‍💼 Phần quản trị (Admin)
 
--   Quản lý sản phẩm (CRUD)
--   Quản lý danh mục
--   Quản lý đơn hàng
--   Quản lý người dùng
--   Thống kê doanh thu
--   Quản lý khuyến mãi
+-   📊 **Dashboard**: Thống kê doanh thu và đơn hàng
+-   📝 **Quản lý sản phẩm**: Thêm, sửa, xóa sản phẩm
+-   🏷️ **Danh mục**: Quản lý danh mục và thương hiệu
+-   📦 **Đơn hàng**: Xử lý và theo dõi đơn hàng
+-   👥 **Người dùng**: Quản lý tài khoản người dùng
+-   🎫 **Khuyến mãi**: Tạo và quản lý mã giảm giá
 
-## Công nghệ sử dụng
+## 🛠️ Công nghệ sử dụng
 
 ### Frontend
 
--   React.js
--   Tailwind CSS
--   CKEditor 5
--   Swiper
--   Axios
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Redux](https://img.shields.io/badge/Redux-593D88?style=for-the-badge&logo=redux&logoColor=white)
 
 ### Backend
 
--   Node.js
--   Express.js
--   MySQL
--   Sequelize ORM
--   Multer
+![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
+![Express](https://img.shields.io/badge/Express.js-404D59?style=for-the-badge)
+![MySQL](https://img.shields.io/badge/MySQL-00000F?style=for-the-badge&logo=mysql&logoColor=white)
 
-## Cấu trúc dự án
+## 📁 Cấu trúc dự án
 
 ```bash
 src/
 ├── frontend-home/ # Frontend cho người dùng
+│ ├── public/ # Static files
+│ ├── src/
+│ │ ├── components/ # React components
+│ │ ├── pages/ # Page components
+│ │ ├── contexts/ # React contexts
+│ │ ├── hooks/ # Custom hooks
+│ │ └── services/ # API services
+│
 ├── frontend-dashboard/ # Frontend cho admin
+│ ├── src/
+│ │ ├── components/ # Admin components
+│ │ ├── pages/ # Admin pages
+│ │ └── services/ # Admin services
+│
 └── backend/ # Backend API
-├── assets/ # Static files
-├── controllers/ # Logic xử lý
-├── middlewares/ # Middleware
+├── controllers/ # Route controllers
 ├── models/ # Database models
-└── routes/ # API routes
+├── routes/ # API routes
+└── middlewares/ # Custom middlewares
 ```
 
-## Cài đặt
+## 🚀 Hướng dẫn cài đặt
+
+### Yêu cầu hệ thống
+
+-   Node.js >= 14.0.0
+-   MySQL >= 8.0
+-   npm >= 6.0.0
+
+### Các bước cài đặt
 
 1. Clone repository
 
@@ -66,70 +97,71 @@ src/
 git clone https://github.com/your-username/cn-da21ttb-trantrungnghia-ecommercewebsite-reactjs.git
 ```
 
-2. Cài đặt dependencies cho backend
+2. Cài đặt dependencies
 
 ```bash
+Backend
 cd backend
 npm install
-```
 
-3. Cài đặt dependencies cho frontend người dùng
-
-```bash
+Frontend người dùng
 cd frontend-home
 npm install
-```
 
-4. Cài đặt dependencies cho frontend admin
-
-```bash
+Frontend admin
 cd frontend-dashboard
 npm install
 ```
 
-5. Tạo file .env trong thư mục backend và cấu hình các biến môi trường
-
-6. Import database
+3. Cấu hình môi trường
 
 ```bash
-mysql src/database/ecommanagement.sql
+Tạo file .env trong thư mục backend
+cp .env.example .env
+Cập nhật các biến môi trường
+DB_HOST=localhost
+DB_USER=your_username
+DB_PASS=your_password
+DB_NAME=ecommerce
+JWT_SECRET=your_secret_key
 ```
 
-## Khởi chạy dự án
-
-1. Chạy backend
+4. Import database
 
 ```bash
-cd backend
-npm start
+bash
+mysql -u root -p < src/database/ecommanagement.sql
+
 ```
 
-2. Chạy frontend người dùng
+## 📱 Responsive Design
 
-```bash
-cd frontend-home
-npm start
-```
+Website được thiết kế để tương thích với các thiết bị:
+- 💻 Desktop (>= 1024px)
+- 📱 Tablet (768px - 1023px)
+- 📱 Mobile (< 768px)
 
-3. Chạy frontend admin
+## 📧 Contact Form
 
-```bash
-cd frontend-dashboard
-npm start
-```
+Để cấu hình form liên hệ:
+1. Cập nhật `SMTP_CONFIG` trong `.env`
+2. Khởi động email service trong backend
+3. Test gửi email thử nghiệm
 
-## API Documentation
+## 👤 Tác giả
 
-Chi tiết về các API endpoints có thể được tìm thấy trong `src/database/structure_api.txt`
+**Trần Trung Nghĩa**
+- 🌐 Website: [nghiadev.com](https://nghiadev.com)
+- 📧 Email: nghia.tran@gmail.com
+- 💼 LinkedIn: [trantrungnghia](https://linkedin.com/in/trantrungnghia)
+- 🐱 GitHub: [@trantrungnghia](https://github.com/trantrungnghia)
 
-## Database Schema
+## 📝 License
 
-Chi tiết về cấu trúc database có thể được tìm thấy trong `src/database/describe_db.txt`
+Copyright © 2024 [Trần Trung Nghĩa](https://github.com/trantrungnghia).<br />
+Project này được cấp phép theo giấy phép [MIT](LICENSE).
 
-## Contributing
-
-Vui lòng đọc [CONTRIBUTING.md](CONTRIBUTING.md) để biết thêm chi tiết về quy trình đóng góp cho dự án.
-
-## License
-
-[MIT](LICENSE)
+---
+<div align="center">
+Made with ❤️ by Trần Trung Nghĩa
+</div>
