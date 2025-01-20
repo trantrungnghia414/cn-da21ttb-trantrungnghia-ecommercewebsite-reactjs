@@ -150,11 +150,11 @@ Website được thiết kế để tương thích với các thiết bị:
 ## 👤 Tác giả
 
 **Trần Trung Nghĩa**
-- 🌐 Website: [trungnghia03tv.vercel.app](https://trungnghia03tv.vercel.app/)
+- 🌐 Website: [trungnghia03tv.vercel.app](https://trungnghia03tv.vercel.app)
 - 📧 Email: trantrungnghia03.tv@gmail.com
 - 🐱 GitHub: [@trantrungnghia](https://github.com/trantrungnghia414)
 - 📞 Facebook: [@trantrungnghia](https://www.facebook.com/lucky.nghia.5)
-- 📞 Instagram: [@trantrungnghia](https://www.instagram.com/trantrungnghia03/)
+- 📞 Instagram: [@trantrungnghia](https://www.instagram.com/trantrungnghia03)
 - 📞 Zalo: [@trantrungnghia](https://zalo.me/0929039414)
 
 ## 📝 License
