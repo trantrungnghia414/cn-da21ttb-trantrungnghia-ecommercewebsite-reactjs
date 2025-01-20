@@ -16,8 +16,8 @@
 ## ✨ Preview
 
 <div align="center">
-  <img src="preview/home.png" alt="Home Page" width="400"/>
-  <img src="preview/admin.png" alt="Admin Dashboard" width="400"/>
+  <img src="./src/backend/assets/image/preview/home.png" alt="Home Page" width="400"/>
+  <img src="./src/backend/assets/image/preview/admin.png" alt="Admin Dashboard" width="400"/>
 </div>
 
 ## 🎯 Tính năng nổi bật
@@ -117,8 +117,8 @@ npm install
 
 ```bash
 Tạo file .env trong thư mục backend
-cp .env.example .env
 Cập nhật các biến môi trường
+
 DB_HOST=localhost
 DB_USER=your_username
 DB_PASS=your_password
@@ -129,7 +129,6 @@ JWT_SECRET=your_secret_key
 4. Import database
 
 ```bash
-bash
 mysql -u root -p < src/database/ecommanagement.sql
 
 ```
@@ -151,14 +150,16 @@ Website được thiết kế để tương thích với các thiết bị:
 ## 👤 Tác giả
 
 **Trần Trung Nghĩa**
-- 🌐 Website: [nghiadev.com](https://nghiadev.com)
-- 📧 Email: nghia.tran@gmail.com
-- 💼 LinkedIn: [trantrungnghia](https://linkedin.com/in/trantrungnghia)
-- 🐱 GitHub: [@trantrungnghia](https://github.com/trantrungnghia)
+- 🌐 Website: [trungnghia03tv.vercel.app](https://trungnghia03tv.vercel.app/)
+- 📧 Email: trantrungnghia03.tv@gmail.com
+- 🐱 GitHub: [@trantrungnghia](https://github.com/trantrungnghia414)
+- 📞 Facebook: [@trantrungnghia](https://www.facebook.com/lucky.nghia.5)
+- 📞 Instagram: [@trantrungnghia](https://www.instagram.com/trantrungnghia03/)
+- 📞 Zalo: [@trantrungnghia](https://zalo.me/0929039414)
 
 ## 📝 License
 
-Copyright © 2024 [Trần Trung Nghĩa](https://github.com/trantrungnghia).<br />
+Copyright © 2024 [Trần Trung Nghĩa](https://github.com/trantrungnghia414).<br />
 Project này được cấp phép theo giấy phép [MIT](LICENSE).
 
 ---
